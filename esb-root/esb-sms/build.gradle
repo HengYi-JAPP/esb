@@ -1,0 +1,16 @@
+dependencies {
+    compile project(':esb-core'),
+            "io.vertx:vertx-jdbc-client:${vertxVersion}",
+            "com.zaxxer:HikariCP:${hikariVersion}",
+            files('libs/ojdbc6.jar', 'libs/sms-soap-wsimport.jar'),
+            "org.jetbrains.xodus:xodus-openAPI:${xodusVersion}",
+            "org.jetbrains.xodus:xodus-environment:${xodusVersion}",
+            "org.jetbrains.xodus:xodus-entity-store:${xodusVersion}"
+    // wsimport -clientjar sms-soap-wsimport.jar  http://ums.zj165.com:8888/sms_hb/services/Sms?wsdl
+}
+
+jar.manifest {
+    attributes(
+            'Main-Verticle': "com.hengyi.japp.esb.sms.MainVerticle",
+    )
+}

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration>
+    <jmxConfigurator/>
+    <property name="PATTERN" value="%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{35} - %msg%n"/>
+    <timestamp key="bySecond" datePattern="yyyyMMdd'T'HHmmss"/>
+    <!-- 控制台输出日志 -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${PATTERN}</pattern>
+        </encoder>
+    </appender>
+    <root level="info">
+        <appender-ref ref="STDOUT"/>
+    </root>
+</configuration>

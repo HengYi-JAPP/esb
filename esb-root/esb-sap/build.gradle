@@ -1,0 +1,15 @@
+dependencies {
+    compile project(':esb-core'),
+            "com.sap:sapjco3:3.0.9",
+            "io.vertx:vertx-web-client:${vertxVersion}"
+}
+
+jar.manifest {
+    attributes(
+            'Main-Verticle': "com.hengyi.japp.esb.sap.MainVerticle",
+    )
+}
+
+docker {
+    files "libsapjco3.so"
+}

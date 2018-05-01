@@ -1,0 +1,4 @@
+dependencies {
+    compile project(':esb-sdk'),
+            "io.vertx:vertx-rx-java2:${vertxVersion}"
+}

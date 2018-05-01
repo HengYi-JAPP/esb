@@ -1,0 +1,64 @@
+version: "3.2"
+
+services:
+#  esb-open:
+#    image: hengyi/esb-open
+#    container_name: esb-open
+#    volumes:
+#      - type: bind
+#        source: /home/esb/esb-open
+#        target: /home/esb/esb-open
+#    expose:
+#      - "9999"
+#    ports:
+#      - "9999:9999"
+
+  esb-auth:
+    image: hengyi/esb-auth
+    container_name: esb-auth
+    volumes:
+      - type: bind
+        source: /home/esb/esb-auth
+        target: /home/esb/esb-auth
+    expose:
+      - "9998"
+    ports:
+      - "9998:9998"
+
+  esb-sap:
+    image: hengyi/esb-sap
+    container_name: esb-sap
+    volumes:
+      - type: bind
+        source: /home/esb/esb-sap
+        target: /home/esb/esb-sap
+    expose:
+      - "9997"
+      - "9876"
+    ports:
+      - "9997:9997"
+      - "9876:9876"
+
+#  esb-sms:
+#    image: hengyi/esb-sms
+#    container_name: esb-sms
+#    volumes:
+#      - type: bind
+#        source: /home/esb/esb-sms
+#        target: /home/esb/esb-sms
+#    expose:
+#      - "9996"
+#    ports:
+#      - "9996:9996"
+
+  esb-weixin:
+    image: hengyi/esb-weixin
+    container_name: esb-weixin
+    volumes:
+      - type: bind
+        source: /home/esb/esb-weixin
+        target: /home/esb/esb-weixin
+    expose:
+      - "9995"
+    ports:
+      - "9995:9995"

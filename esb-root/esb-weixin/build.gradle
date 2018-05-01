@@ -1,0 +1,13 @@
+dependencies {
+    compile project(':esb-core'),
+            "org.jzb.social-sdk:weixin-qydev:1.0",
+            "io.vertx:vertx-jdbc-client:${vertxVersion}",
+            "com.zaxxer:HikariCP:${hikariVersion}",
+            files('libs/ojdbc6.jar')
+}
+
+jar.manifest {
+    attributes(
+            'Main-Verticle': "com.hengyi.japp.esb.weixin.MainVerticle",
+    )
+}

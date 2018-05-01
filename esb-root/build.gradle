@@ -1,0 +1,76 @@
+plugins {
+    id "com.palantir.docker" version "0.19.2"
+    id 'com.github.johnrengelman.shadow' version '2.0.2'
+}
+allprojects {
+    group 'com.hengyi.japp.esb'
+    version '1.0'
+
+    apply plugin: 'idea'
+    apply plugin: "maven"
+    apply plugin: 'maven-publish'
+    apply plugin: 'signing'
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+}
+subprojects {
+    apply plugin: 'java'
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+    apply plugin: 'application'
+    mainClassName = "io.vertx.core.Launcher"
+    apply plugin: 'com.palantir.docker'
+    apply plugin: 'com.github.johnrengelman.shadow'
+
+    dependencies {
+        compileOnly "io.vertx:vertx-codegen:${vertxVersion}"
+        testCompile "junit:junit:4.12",
+                "io.vertx:vertx-unit:${vertxVersion}",
+                "io.vertx:vertx-web-client:${vertxVersion}"
+    }
+
+    /**
+     * 打包 docker 准备
+     */
+    docker {
+        dependsOn build
+        name "hengyi/${project.name}"
+        noCache true
+        files "build/libs/${project.name}-fat.jar"
+    }
+    shadowJar {
+        archiveName "${project.name}-fat.jar"
+    }
+    jar.manifest {
+        attributes(
+                'Implementation-Title': name,
+                'Implementation-Version': version,
+                'Built-By': System.getProperty('user.name'),
+                'Built-JDK': System.getProperty('java.version'),
+                'Source-Compatibility': sourceCompatibility,
+                'Target-Compatibility': targetCompatibility
+        )
+    }
+//    javadoc.options {
+//        encoding = 'UTF-8'
+//        use = true
+//        links 'https://docs.oracle.com/javase/8/docs/api/'
+//    }
+//    task javadocJar(type: Jar) {
+//        classifier = 'javadoc'
+//        from javadoc
+//    }
+//    task sourcesJar(type: Jar) {
+//        classifier = 'sources'
+//        from sourceSets.main.allSource
+//    }
+//    artifacts {
+//        archives javadocJar, sourcesJar
+//    }
+}

@@ -1,0 +1,19 @@
+dependencies {
+    compile "org.jzb:jzb-core:${jzbVersion}",
+            "com.google.inject:guice:${guiceVersion}",
+            "io.vertx:vertx-web:${vertxVersion}",
+            "io.vertx:vertx-auth-jwt:${vertxVersion}",
+            "io.vertx:vertx-rx-java2:${vertxVersion}",
+            "io.vertx:vertx-dropwizard-metrics:${vertxVersion}",
+
+            "org.pac4j:vertx-pac4j:3.0.1",
+            "org.pac4j:pac4j-cas:2.3.1",
+            "io.vertx:vertx-service-discovery:${vertxVersion}",
+            "io.vertx:vertx-circuit-breaker:${vertxVersion}",
+            "io.vertx:vertx-service-proxy:${vertxVersion}",
+            "io.vertx:vertx-hazelcast:${vertxVersion}",
+            "io.vertx:vertx-health-check:${vertxVersion}"
+
+    compileOnly "org.jetbrains.xodus:xodus-openAPI:${xodusVersion}",
+            "io.vertx:vertx-web-client:${vertxVersion}"
+}
