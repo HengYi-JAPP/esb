@@ -18,8 +18,8 @@
         <File>${LOG_HOME}/error.txt</File>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
             <FileNamePattern>${LOG_HOME}/error-%d{yyyy-MM-dd}.%i.txt</FileNamePattern>
-            <maxFileSize>10MB</maxFileSize>
-            <maxHistory>200</maxHistory>
+            <maxFileSize>100MB</maxFileSize>
+            <maxHistory>20</maxHistory>
             <totalSizeCap>2GB</totalSizeCap>
         </rollingPolicy>
         <encoder>
@@ -34,7 +34,7 @@
             <MaxIndex>3</MaxIndex>
         </rollingPolicy>
         <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
-            <MaxFileSize>5MB</MaxFileSize>
+            <MaxFileSize>100MB</MaxFileSize>
         </triggeringPolicy>
         <encoder>
             <pattern>${PATTERN}</pattern>
