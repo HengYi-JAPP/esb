@@ -1,14 +1,11 @@
 package com.hengyi.japp.esb.sap.interfaces.nnfp.internal;
 
-import sun.misc.BASE64Decoder;
-import sun.misc.BASE64Encoder;
-
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
+import java.util.Base64;
 
 /**
  * 功能描述
@@ -63,7 +60,7 @@ public class DESDZFP {
         }
 
         // 使用Base64加密后返回
-        return new BASE64Encoder().encode(temp);
+        return Base64.getEncoder().encodeToString(temp);
     }
 
     /**
@@ -83,16 +80,15 @@ public class DESDZFP {
      */
     public static String decrypt(String xmlStr) throws Exception {
         // base64解码
-        BASE64Decoder decoder = new BASE64Decoder();
         byte[] encBuf = null;
-        try {
-            if (xmlStr != null) {
-                xmlStr = xmlStr.replaceAll(" ", "+");//解决URL里加号变空格
-            }
-            encBuf = decoder.decodeBuffer(xmlStr);
-        } catch (IOException e) {
-            e.printStackTrace();
+//        try {
+        if (xmlStr != null) {
+            xmlStr = xmlStr.replaceAll(" ", "+");//解决URL里加号变空格
         }
+        encBuf = Base64.getDecoder().decode(xmlStr);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
 
         // 取密钥和偏转向量
         byte[] key = new byte[8];
@@ -354,13 +350,9 @@ public class DESDZFP {
      */
     public static void getKeyIV(String encryptKey, byte[] key, byte[] iv) {
         // 密钥Base64解密
-        BASE64Decoder decoder = new BASE64Decoder();
+//        BASE64Decoder decoder = new BASE64Decoder();
         byte[] buf = null;
-        try {
-            buf = decoder.decodeBuffer(encryptKey);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        buf = Base64.getDecoder().decode(encryptKey);
         // 前8位为key
         int i;
         for (i = 0; i < key.length; i++) {

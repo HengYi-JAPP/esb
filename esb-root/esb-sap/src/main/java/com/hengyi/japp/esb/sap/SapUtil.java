@@ -1,15 +1,14 @@
 package com.hengyi.japp.esb.sap;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.NullNode;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.sap.conn.jco.*;
+import lombok.SneakyThrows;
 import org.jzb.J;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -29,32 +28,26 @@ public class SapUtil {
      * @param f
      * @param body json 文本
      */
+    @SneakyThrows
     public static final void setParam(final JCoFunction f, final String body) {
         if (J.isBlank(body)) {
             return;
         }
-        try {
-            final JsonNode node = MAPPER.readTree(body);
-            setParam(f.getImportParameterList(), node.get("imports"));
-            setParam(f.getChangingParameterList(), node.get("exports"));
-            setParam(f.getChangingParameterList(), node.get("changings"));
-            setParam(f.getTableParameterList(), node.get("tables"));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        final JsonNode node = MAPPER.readTree(body);
+        setParam(f.getImportParameterList(), node.get("imports"));
+        setParam(f.getChangingParameterList(), node.get("exports"));
+        setParam(f.getChangingParameterList(), node.get("changings"));
+        setParam(f.getTableParameterList(), node.get("tables"));
     }
 
+    @SneakyThrows
     public static final String params2String(JCoFunction f) {
         final Map<String, Object> map = Maps.newHashMap();
         map.put("imports", toMap(f.getImportParameterList()));
         map.put("exports", toMap(f.getExportParameterList()));
         map.put("changings", toMap(f.getChangingParameterList()));
         map.put("tables", toMap(f.getTableParameterList()));
-        try {
-            return MAPPER.writeValueAsString(map);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
+        return MAPPER.writeValueAsString(map);
     }
 
     private static final void setParam(final JCoRecord record, final JsonNode node) {

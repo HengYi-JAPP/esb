@@ -13,17 +13,17 @@ services:
 #    ports:
 #      - "9999:9999"
 
-  esb-auth:
-    image: hengyi/esb-auth
-    container_name: esb-auth
-    volumes:
-      - type: bind
-        source: /home/esb/esb-auth
-        target: /home/esb/esb-auth
-    expose:
-      - "9998"
-    ports:
-      - "9998:9998"
+  #  esb-auth:
+  #    image: hengyi/esb-auth
+  #    container_name: esb-auth
+  #    volumes:
+  #      - type: bind
+  #        source: /home/esb/esb-auth
+  #        target: /home/esb/esb-auth
+  #    expose:
+  #      - "9998"
+  #    ports:
+  #      - "9998:9998"
 
   esb-sap:
     image: hengyi/esb-sap
@@ -51,14 +51,14 @@ services:
 #    ports:
 #      - "9996:9996"
 
-  esb-weixin:
-    image: hengyi/esb-weixin
-    container_name: esb-weixin
-    volumes:
-      - type: bind
-        source: /home/esb/esb-weixin
-        target: /home/esb/esb-weixin
-    expose:
-      - "9995"
-    ports:
-      - "9995:9995"
+#  esb-weixin:
+#    image: hengyi/esb-weixin
+#    container_name: esb-weixin
+#    volumes:
+#      - type: bind
+#        source: /home/esb/esb-weixin
+#        target: /home/esb/esb-weixin
+#    expose:
+#      - "9995"
+#    ports:
+#      - "9995:9995"

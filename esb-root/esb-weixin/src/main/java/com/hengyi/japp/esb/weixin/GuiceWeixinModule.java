@@ -14,9 +14,6 @@ import com.hengyi.japp.esb.weixin.application.internal.WeixinServiceImpl;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.ext.jdbc.JDBCClient;
-import jetbrains.exodus.entitystore.PersistentEntityStore;
-import jetbrains.exodus.entitystore.PersistentEntityStores;
-import org.apache.commons.io.FileUtils;
 import org.jzb.weixin.work.WorkClient;
 
 import java.util.Properties;
@@ -54,9 +51,9 @@ public class GuiceWeixinModule extends GuiceModule {
         return JDBCClient.createShared(vertx, hycxDS, "hycxDS");
     }
 
-    @Provides
-    @Singleton
-    PersistentEntityStore PersistentEntityStore() {
-        return PersistentEntityStores.newInstance(FileUtils.getFile(rootPath(), "xodus"));
-    }
+//    @Provides
+//    @Singleton
+//    PersistentEntityStore PersistentEntityStore() {
+//        return PersistentEntityStores.newInstance(FileUtils.getFile(rootPath(), "xodus"));
+//    }
 }

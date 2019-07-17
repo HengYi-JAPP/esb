@@ -1,6 +1,8 @@
 plugins {
-    id "com.palantir.docker" version "0.19.2"
-    id 'com.github.johnrengelman.shadow' version '2.0.2'
+    id 'io.spring.dependency-management' version '1.0.7.RELEASE'
+    id 'io.franzbecker.gradle-lombok' version '3.0.0'
+    id 'com.palantir.docker' version "0.22.1"
+    id 'com.github.johnrengelman.shadow' version '5.0.0'
 }
 allprojects {
     group 'com.hengyi.japp.esb'
@@ -10,6 +12,7 @@ allprojects {
     apply plugin: "maven"
     apply plugin: 'maven-publish'
     apply plugin: 'signing'
+    apply plugin: 'io.franzbecker.gradle-lombok'
 
     repositories {
         mavenLocal()
@@ -38,14 +41,15 @@ subprojects {
     /**
      * 打包 docker 准备
      */
-    docker {
-        dependsOn build
-        name "hengyi/${project.name}"
-        noCache true
-        files "build/libs/${project.name}-fat.jar"
-    }
     shadowJar {
         archiveName "${project.name}-fat.jar"
+    }
+    docker {
+        dependsOn shadowJar
+        name "hengyi/${project.name}"
+        buildArgs([BUILD_VERSION: 'version'])
+        files tasks.shadowJar.outputs
+        noCache true
     }
     jar.manifest {
         attributes(

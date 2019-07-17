@@ -6,8 +6,6 @@ import com.hengyi.japp.esb.auth.verticle.AuthVerticle;
 import com.hengyi.japp.esb.core.verticle.BaseEsbVerticle;
 import io.reactivex.Completable;
 import io.vertx.core.DeploymentOptions;
-import io.vertx.core.Future;
-import io.vertx.reactivex.ext.dropwizard.MetricsService;
 
 import java.util.UUID;
 
@@ -20,26 +18,14 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class MainVerticle extends BaseEsbVerticle {
     public static Injector GUICE;
-    public static MetricsService metricsService;
 
     @Override
-    public void start(Future<Void> startFuture) {
+    public Completable rxStart() {
         GUICE = Guice.createInjector(new GuiceAuthModule(vertx));
-        metricsService = MetricsService.create(vertx);
 
-        final DeploymentOptions deploymentOptions = new DeploymentOptions();
-        deploymentOptions.setConfig(config());
-        Completable.mergeArray(
-                vertx.rxDeployVerticle(AuthVerticle.class.getName(), deploymentOptions).toCompletable()
-        ).subscribe(
-                () -> {
-                    startFuture.complete();
-                    log.info("===Esb Auth 启动成功===");
-                },
-                ex -> {
-                    startFuture.fail(ex);
-                    log.error("===Esb Auth 启动失败===", ex);
-                }
+        final DeploymentOptions deploymentOptions = new DeploymentOptions().setConfig(config());
+        return Completable.mergeArray(
+                vertx.rxDeployVerticle(AuthVerticle.class.getName(), deploymentOptions).ignoreElement()
         );
     }
 

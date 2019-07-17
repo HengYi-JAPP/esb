@@ -3,7 +3,7 @@ dependencies {
             "org.jzb.social-sdk:weixin-qydev:1.0",
             "io.vertx:vertx-jdbc-client:${vertxVersion}",
             "com.zaxxer:HikariCP:${hikariVersion}",
-            files('libs/ojdbc6.jar')
+            files('/home/jzb/Templates/lib/ojdbc7.jar')
 }
 
 jar.manifest {
