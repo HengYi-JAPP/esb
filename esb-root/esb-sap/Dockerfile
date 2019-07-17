@@ -1,5 +1,8 @@
 FROM java:8-jre
 
+ENV TZ Asia/Shanghai
+ENV JAVA_OPTIONS ""
+
 ENV LD_LIBRARY_PATH /sapjco3
 COPY libsapjco3.so $LD_LIBRARY_PATH/
 RUN  echo "sapdp00  3200/tcp" >> /etc/services \

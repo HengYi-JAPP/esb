@@ -46,7 +46,7 @@ subprojects {
     }
     docker {
         dependsOn shadowJar
-        name "hengyi/${project.name}"
+        name "hengyi/${project.name}:${project.version}"
         buildArgs([BUILD_VERSION: 'version'])
         files tasks.shadowJar.outputs
         noCache true
