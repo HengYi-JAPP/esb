@@ -25,7 +25,7 @@ public class JcoDataProvider implements DestinationDataProvider, ServerDataProvi
         Collections.list(properties.keys())
                 .stream()
                 .sorted()
-                .forEach(k -> log.info("===" + k + "=" + properties.get(k) + "==="));
+                .forEach(k -> System.out.println("===" + k + "=" + properties.get(k) + "==="));
     }
 
     public static void init(Properties properties) {
