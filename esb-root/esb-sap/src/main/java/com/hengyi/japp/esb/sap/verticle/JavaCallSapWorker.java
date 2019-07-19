@@ -16,12 +16,12 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class JavaCallSapWorker extends AbstractVerticle {
+    public static boolean isLog = false;
 
     @Override
     public Completable rxStart() {
         return vertx.eventBus().<JsonObject>consumer("esb:sap:JavaCallSap", reply -> {
             final JsonObject jsonObject = reply.body();
-            final StringBuilder sb = new StringBuilder(jsonObject.encode()).append("\n");
             final String rfcName = jsonObject.getString("rfcName");
             final String body = jsonObject.getString("body");
             Single.fromCallable(() -> {
@@ -32,12 +32,26 @@ public class JavaCallSapWorker extends AbstractVerticle {
                 return SapUtil.params2String(f);
             }).subscribe(it -> {
                 reply.reply(it);
-                log.info(sb.append(it).toString());
+                logSuccess(jsonObject, it);
             }, err -> {
                 reply.fail(400, err.getLocalizedMessage());
-                log.error(sb.toString(), err);
+                logError(jsonObject, err);
             });
         }).rxCompletionHandler();
+    }
+
+    private void logSuccess(JsonObject body, String result) {
+        if (isLog) {
+            final StringBuilder sb = new StringBuilder(body.encode()).append("\n").append(result);
+            log.info(sb.toString());
+        }
+    }
+
+    private void logError(JsonObject body, Throwable err) {
+        if (isLog) {
+            final StringBuilder sb = new StringBuilder(body.encode());
+            log.error(sb.toString(), err);
+        }
     }
 
 }

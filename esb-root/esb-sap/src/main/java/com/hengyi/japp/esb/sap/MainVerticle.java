@@ -3,39 +3,32 @@ package com.hengyi.japp.esb.sap;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.hengyi.japp.esb.core.Util;
-import com.hengyi.japp.esb.core.verticle.BaseEsbVerticle;
 import com.hengyi.japp.esb.sap.application.internal.JcoDataProvider;
 import com.hengyi.japp.esb.sap.verticle.JavaCallSapAgent;
 import com.hengyi.japp.esb.sap.verticle.JavaCallSapWorker;
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.vertx.core.DeploymentOptions;
-import io.vertx.core.Future;
+import io.vertx.reactivex.core.AbstractVerticle;
 
 import java.util.concurrent.TimeUnit;
 
 /**
  * @author jzb 2018-03-18
  */
-public class MainVerticle extends BaseEsbVerticle {
+public class MainVerticle extends AbstractVerticle {
     public static Injector GUICE;
 
     @Override
-    public void start(Future<Void> startFuture) {
+    public Completable rxStart() {
         JcoDataProvider.init(Util.readProperties(config().getString("rootPath"), "sap.properties"));
         GUICE = Guice.createInjector(new GuiceSapModule(vertx));
 
-        Completable.mergeArray(
+        return Completable.mergeArray(
                 deployJavaCallSapAgent().ignoreElement(),
                 deployJavaCallSapWorker().ignoreElement()
-//                vertx.rxDeployVerticle(SapCallJavaVerticle.class.getName(), deploymentOptions).toCompletable()
-        ).subscribe(() -> {
-            startFuture.complete();
-            log.info("===Esb Sap 启动成功===");
-        }, ex -> {
-            startFuture.fail(ex);
-            log.error("===Esb Sap 启动失败===", ex);
-        });
+                //                vertx.rxDeployVerticle(SapCallJavaVerticle.class.getName(), deploymentOptions).toCompletable()
+        );
     }
 
     private Single<String> deployJavaCallSapAgent() {
@@ -55,14 +48,4 @@ public class MainVerticle extends BaseEsbVerticle {
         return vertx.rxDeployVerticle(JavaCallSapWorker.class.getName(), deploymentOptions);
     }
 
-    @Override
-    public String getAppid() {
-        return "ce034307-2ad9-11e8-ab84-87fa685516db";
-    }
-
-    @Override
-    public String getAppsecret() {
-        // TODO getAppsecret
-        return null;
-    }
 }

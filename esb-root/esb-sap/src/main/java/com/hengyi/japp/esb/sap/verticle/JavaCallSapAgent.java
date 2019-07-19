@@ -15,6 +15,9 @@ import io.vertx.reactivex.ext.web.handler.ResponseContentTypeHandler;
 import java.time.Duration;
 import java.util.Optional;
 
+import static com.hengyi.japp.esb.core.Constant.JSON_CONTENT_TYPE;
+import static com.hengyi.japp.esb.core.Constant.TEXT_CONTENT_TYPE;
+
 /**
  * @author jzb 2018-03-18
  */
@@ -28,7 +31,16 @@ public class JavaCallSapAgent extends AbstractVerticle {
         final JWTAuth jwtAuth = Util.createJwtAuth(vertx);
         router.route().handler(JWTAuthHandler.create(jwtAuth));
 
-        router.post("/api/rfcs/:rfcName").produces("application/json").handler(rc -> {
+        router.put("/api/log").produces(TEXT_CONTENT_TYPE).handler(rc -> {
+            JavaCallSapWorker.isLog = true;
+            rc.response().end("JavaCallSapWorker.isLog=" + JavaCallSapWorker.isLog);
+        });
+        router.delete("/api/log").produces(TEXT_CONTENT_TYPE).handler(rc -> {
+            JavaCallSapWorker.isLog = false;
+            rc.response().end("JavaCallSapWorker.isLog=" + JavaCallSapWorker.isLog);
+        });
+
+        router.post("/api/rfcs/:rfcName").produces(JSON_CONTENT_TYPE).handler(rc -> {
             final String rfcName = rc.pathParam("rfcName");
             final String body = rc.getBodyAsString();
             final JsonObject message = new JsonObject().put("rfcName", rfcName).put("body", body);

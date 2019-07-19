@@ -1,9 +1,21 @@
-FROM mcr.microsoft.com/java/jre:11u3-zulu-centos
+FROM openjdk:11 as build
 
-ENV LANG     en_US.UTF-8
-ENV LANGUAGE en_US.UTF-8
-ENV LC_ALL   en_US.UTF-8
+# create custom jre
+RUN jlink \
+    --module-path="${JAVA_HOME}/jmods" \
+    --compress=2 \
+    --add-modules=java.base,java.logging,java.xml,jdk.unsupported,java.sql,java.naming,java.desktop,java.management,java.security.jgss,java.instrument,jdk.charsets \
+    --no-header-files \
+    --no-man-pages \
+    --verbose \
+    --output=/opt/jre
+
+FROM centos
+COPY --from=build /opt/jre /opt/jre
+
 ENV TZ Asia/Shanghai
+ENV JAVA_HOME="/opt/jre"
+ENV PATH="$PATH:/opt/jre/bin"
 ENV JAVA_TOOL_OPTIONS="-XX:+UseContainerSupport"
 ENV JAVA_OPTIONS ""
 
@@ -220,4 +232,4 @@ EXPOSE 9997
 
 WORKDIR $VERTICLE_HOME
 ENTRYPOINT ["sh", "-c"]
-CMD ["exec java --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED $JAVA_OPTIONS -jar $VERTICLE_FILE -conf /home/esb/esb-sap/config.json"]
+CMD ["exec java -Dadd-opens=java.base/java.lang=ALL-UNNAMED -Dadd-opens=java.base/java.lang.invoke=ALL-UNNAMED $JAVA_OPTIONS -jar $VERTICLE_FILE -conf /home/esb/esb-sap/config.json"]

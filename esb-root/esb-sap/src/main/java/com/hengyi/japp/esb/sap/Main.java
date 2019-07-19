@@ -5,6 +5,7 @@ import io.vertx.core.DeploymentOptions;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.Vertx;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.TimeUnit;
 
@@ -13,6 +14,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @author jzb 2018-04-17
  */
+@Slf4j
 public class Main {
     private static final String ROOT_PATH = "/home/esb/esb-sap";
 
@@ -24,7 +26,11 @@ public class Main {
         final VertxOptions vertxOptions = new VertxOptions()
                 .setMaxWorkerExecuteTime(1)
                 .setMaxWorkerExecuteTimeUnit(TimeUnit.DAYS);
-        System.out.println("1 + 1 = 2");
-        Vertx.vertx(vertxOptions).deployVerticle(MainVerticle.class.getName(), deploymentOptions);
+        Vertx.vertx(vertxOptions).rxDeployVerticle(MainVerticle.class.getName(), deploymentOptions)
+                .ignoreElement()
+                .subscribe(
+                        () -> log.info("===Esb Sap 启动成功==="),
+                        err -> log.error("===Esb Sap 启动失败===", err)
+                );
     }
 }
