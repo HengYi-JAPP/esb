@@ -2,7 +2,7 @@ plugins {
     id 'io.spring.dependency-management' version '1.0.7.RELEASE'
     id 'io.franzbecker.gradle-lombok' version '3.0.0'
     id 'com.palantir.docker' version "0.22.1"
-    id 'com.github.johnrengelman.shadow' version '5.0.0'
+    id 'com.github.johnrengelman.shadow' version '5.1.0'
 }
 allprojects {
     group 'com.hengyi.japp.esb'
@@ -47,6 +47,9 @@ subprojects {
      * 打包 docker 准备
      */
     shadowJar {
+        mergeServiceFiles {
+            path = 'META-INF/cxf'
+        }
         archiveName "${project.name}-fat.jar"
     }
     docker {

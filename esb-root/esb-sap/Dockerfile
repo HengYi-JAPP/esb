@@ -220,4 +220,12 @@ EXPOSE 9997
 
 WORKDIR $VERTICLE_HOME
 ENTRYPOINT ["sh", "-c"]
-CMD ["exec java --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED $JAVA_OPTIONS -jar $VERTICLE_FILE -conf /home/esb/esb-sap/config.json"]
+CMD ["exec java --add-modules java.se \
+--add-exports java.base/jdk.internal.ref=ALL-UNNAMED \
+--add-opens java.base/java.lang=ALL-UNNAMED \
+--add-opens java.base/java.lang.invoke=ALL-UNNAMED \
+--add-opens java.base/java.nio=ALL-UNNAMED \
+--add-opens java.base/sun.nio.ch=ALL-UNNAMED \
+--add-opens java.management/sun.management=ALL-UNNAMED \
+--add-opens jdk.management/com.sun.management.internal=ALL-UNNAMED \
+$JAVA_OPTIONS -jar $VERTICLE_FILE -conf /home/esb/esb-sap/config.json -Dvertx.metrics.options.enabled=true -Dvertx.metrics.options.jmxEnabled=true"]
