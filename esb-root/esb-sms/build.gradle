@@ -1,6 +1,6 @@
 dependencies {
     compile project(':esb-core'),
-            "io.vertx:vertx-jdbc-client:${vertxVersion}",
+            "io.vertx:vertx-jdbc-client",
             "com.zaxxer:HikariCP:${hikariVersion}",
             files('/home/jzb/Templates/lib/ojdbc7.jar', '/home/jzb/Templates/lib/sms-soap-wsimport.jar'),
             "org.jetbrains.xodus:xodus-openAPI:${xodusVersion}",

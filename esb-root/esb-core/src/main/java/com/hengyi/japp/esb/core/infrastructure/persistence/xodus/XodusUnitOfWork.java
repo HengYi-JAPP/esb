@@ -1,11 +1,11 @@
 package com.hengyi.japp.esb.core.infrastructure.persistence.xodus;
 
+import com.github.ixtf.japp.codec.Jcodec;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.hengyi.japp.esb.core.infrastructure.persistence.UnitOfWork;
 import jetbrains.exodus.entitystore.Entity;
 import jetbrains.exodus.entitystore.PersistentEntityStore;
-import org.jzb.J;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +55,7 @@ public class XodusUnitOfWork implements UnitOfWork {
         store.executeInTransaction(txn -> {
             newSet.stream().forEach(it -> {
                 final Entity entity = txn.newEntity(it.getClass().getSimpleName());
-                it.setId(J.uuid());
+                it.setId(Jcodec.uuid());
                 it.fill(entity);
             });
             dirtySet.stream().forEach(it -> {

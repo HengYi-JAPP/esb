@@ -1,5 +1,6 @@
 package com.hengyi.japp.esb.open.application.internal;
 
+import com.github.ixtf.japp.core.J;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -12,7 +13,6 @@ import io.vertx.reactivex.ext.auth.User;
 import io.vertx.reactivex.ext.web.RoutingContext;
 import io.vertx.reactivex.ext.web.client.HttpResponse;
 import io.vertx.reactivex.ext.web.client.WebClient;
-import org.jzb.J;
 
 import java.util.Map;
 import java.util.Optional;

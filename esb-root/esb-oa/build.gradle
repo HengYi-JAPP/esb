@@ -1,0 +1,13 @@
+//./wsimport -keep -d /tmp/oa -p com.hengyi.japp.esb.oa.soap http://220.189.213.71:8077//services/WorkflowService?wsdl
+dependencies {
+    compile project(':esb-core'),
+            files('/home/jzb/Templates/lib/oa-HrmService-wsimport.jar', '/home/jzb/Templates/lib/oa-WorkflowService-wsimport.jar')
+    compile group: 'com.sun.xml.ws', name: 'jaxws-ri', version: '2.3.2'
+    compile group: 'com.sun.xml.ws', name: 'jaxws-tools', version: '2.3.2'
+    compile group: 'org.apache.cxf', name: 'cxf-rt-frontend-jaxws', version: '3.3.2'
+    compile group: 'org.apache.cxf', name: 'cxf-rt-transports-http', version: '3.3.2'
+//    compile group: 'wsdl4j', name: 'wsdl4j', version: '1.6.3'
+//    compile group: 'axis', name: 'axis', version: '1.4'
+}
+
+mainClassName = "com.hengyi.japp.esb.oa.Main"

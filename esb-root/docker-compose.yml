@@ -13,17 +13,17 @@ services:
   #    ports:
   #      - "9999:9999"
 
-  esb-auth:
-    image: hengyi/esb-auth:1.0
-    container_name: esb-auth
-    volumes:
-      - type: bind
-        source: /home/esb/esb-auth
-        target: /home/esb/esb-auth
-    expose:
-      - "9998"
-    ports:
-      - "9998:9998"
+  #  esb-auth:
+  #    image: hengyi/esb-auth:1.0
+  #    container_name: esb-auth
+  #    volumes:
+  #      - type: bind
+  #        source: /home/esb/esb-auth
+  #        target: /home/esb/esb-auth
+  #    expose:
+  #      - "9998"
+  #    ports:
+  #      - "9998:9998"
 
   esb-sap:
     image: hengyi/esb-sap:1.0

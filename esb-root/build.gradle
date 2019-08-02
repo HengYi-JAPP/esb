@@ -9,16 +9,21 @@ allprojects {
     version '1.0'
 
     apply plugin: 'idea'
-    apply plugin: "maven"
+    apply plugin: 'maven'
     apply plugin: 'maven-publish'
-    apply plugin: 'signing'
+    apply plugin: 'io.spring.dependency-management'
     apply plugin: 'io.franzbecker.gradle-lombok'
 
     repositories {
         mavenLocal()
         mavenCentral()
-        maven {
-            url "https://plugins.gradle.org/m2/"
+        maven { url 'https://plugins.gradle.org/m2' }
+        maven { url 'https://jitpack.io' }
+    }
+
+    dependencyManagement {
+        imports {
+            mavenBom "com.github.ixtf:bom:${bomVersion}"
         }
     }
 }
@@ -32,10 +37,10 @@ subprojects {
     apply plugin: 'com.github.johnrengelman.shadow'
 
     dependencies {
-        compileOnly "io.vertx:vertx-codegen:${vertxVersion}"
+        compileOnly "io.vertx:vertx-codegen"
         testCompile "junit:junit:4.12",
-                "io.vertx:vertx-unit:${vertxVersion}",
-                "io.vertx:vertx-web-client:${vertxVersion}"
+                "io.vertx:vertx-unit",
+                "io.vertx:vertx-web-client"
     }
 
     /**

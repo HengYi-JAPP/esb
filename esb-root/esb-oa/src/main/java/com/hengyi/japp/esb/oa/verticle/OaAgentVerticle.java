@@ -1,9 +1,6 @@
-package com.hengyi.japp.esb.sap.verticle;
+package com.hengyi.japp.esb.oa.verticle;
 
 import com.hengyi.japp.esb.core.Util;
-import com.hengyi.japp.esb.sap.application.internal.JcoDataProvider;
-import com.sap.conn.jco.JCoDestination;
-import com.sap.conn.jco.JCoDestinationManager;
 import io.reactivex.Completable;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.json.JsonObject;
@@ -18,14 +15,12 @@ import io.vertx.reactivex.ext.web.handler.ResponseContentTypeHandler;
 import java.time.Duration;
 import java.util.Optional;
 
-import static com.hengyi.japp.esb.core.Constant.JSON_CONTENT_TYPE;
 import static com.hengyi.japp.esb.core.Constant.TEXT_CONTENT_TYPE;
 
 /**
- * @author jzb 2018-03-18
+ * @author jzb 2019-08-02
  */
-public class JavaCallSapAgent extends AbstractVerticle {
-
+public class OaAgentVerticle extends AbstractVerticle {
     @Override
     public Completable rxStart() {
         final Router router = Router.router(vertx);
@@ -34,25 +29,17 @@ public class JavaCallSapAgent extends AbstractVerticle {
         final JWTAuth jwtAuth = Util.createJwtAuth(vertx);
         router.route().handler(JWTAuthHandler.create(jwtAuth));
 
-        router.get("/api/caches/clear").produces(TEXT_CONTENT_TYPE).handler(rc -> Completable.fromAction(() -> {
-            final JCoDestination dest = JCoDestinationManager.getDestination(JcoDataProvider.KEY);
-            dest.getRepository().clear();
-        }).subscribe(() -> rc.response().end("caches.clear=ok"), rc::fail));
-        router.put("/api/log").produces(TEXT_CONTENT_TYPE).handler(rc -> {
-            JavaCallSapWorker.isLog = true;
-            rc.response().end("JavaCallSapWorker.isLog=" + JavaCallSapWorker.isLog);
-        });
-        router.delete("/api/log").produces(TEXT_CONTENT_TYPE).handler(rc -> {
-            JavaCallSapWorker.isLog = false;
-            rc.response().end("JavaCallSapWorker.isLog=" + JavaCallSapWorker.isLog);
-        });
-
-        router.post("/api/rfcs/:rfcName").produces(JSON_CONTENT_TYPE).handler(rc -> {
-            final String rfcName = rc.pathParam("rfcName");
+        router.post("/api/WorkflowService/doCreateWorkflowRequest").produces(TEXT_CONTENT_TYPE).handler(rc -> {
             final String body = rc.getBodyAsString();
-            final JsonObject message = new JsonObject().put("rfcName", rfcName).put("body", body);
             final DeliveryOptions deliveryOptions = new DeliveryOptions().setSendTimeout(Duration.ofHours(1).toMillis());
-            vertx.eventBus().<String>rxSend("esb:sap:JavaCallSap", message, deliveryOptions)
+            vertx.eventBus().<String>rxSend("esb:oa:WorkflowService:doCreateWorkflowRequest", body, deliveryOptions)
+                    .map(Message::body)
+                    .subscribe(rc.response()::end, rc::fail);
+        });
+        router.post("/api/yunbiao/WorkflowService/doCreateWorkflowRequest").produces(TEXT_CONTENT_TYPE).handler(rc -> {
+            final String body = rc.getBodyAsString();
+            final DeliveryOptions deliveryOptions = new DeliveryOptions().setSendTimeout(Duration.ofHours(1).toMillis());
+            vertx.eventBus().<String>rxSend("esb:oa:yunbiao:WorkflowService:doCreateWorkflowRequest", body, deliveryOptions)
                     .map(Message::body)
                     .subscribe(rc.response()::end, rc::fail);
         });
@@ -61,11 +48,10 @@ public class JavaCallSapAgent extends AbstractVerticle {
                 .map(it -> it.getJsonObject("javaCallSap"))
                 .map(it -> it.getJsonObject("http"))
                 .orElse(new JsonObject());
-        final Integer port = httpConfig.getInteger("port", 9997);
+        final Integer port = httpConfig.getInteger("port", 9996);
         return vertx.createHttpServer()
                 .requestHandler(router)
                 .rxListen(port)
                 .ignoreElement();
     }
-
 }

@@ -1,19 +1,23 @@
 dependencies {
-    compile "org.jzb:jzb-core:${jzbVersion}",
-            "com.google.inject:guice:${guiceVersion}",
-            "io.vertx:vertx-web:${vertxVersion}",
-            "io.vertx:vertx-auth-jwt:${vertxVersion}",
-            "io.vertx:vertx-rx-java2:${vertxVersion}",
-            "io.vertx:vertx-dropwizard-metrics:${vertxVersion}",
+    compile "com.github.ixtf.japp:codec",
+            "com.google.inject:guice",
+            "io.vertx:vertx-web",
+            "io.vertx:vertx-auth-jwt",
+            "io.vertx:vertx-rx-java2",
+            "io.vertx:vertx-dropwizard-metrics",
 
-            "org.pac4j:vertx-pac4j:3.0.1",
-            "org.pac4j:pac4j-cas:2.3.1",
-            "io.vertx:vertx-service-discovery:${vertxVersion}",
-            "io.vertx:vertx-circuit-breaker:${vertxVersion}",
-            "io.vertx:vertx-service-proxy:${vertxVersion}",
-            "io.vertx:vertx-hazelcast:${vertxVersion}",
-            "io.vertx:vertx-health-check:${vertxVersion}"
+//            "org.pac4j:vertx-pac4j:3.0.1",
+//            "org.pac4j:pac4j-cas:2.3.1",
+
+            "org.pac4j:vertx-pac4j:4.1.0",
+            "org.pac4j:pac4j-cas:3.7.0",
+
+            "io.vertx:vertx-service-discovery",
+            "io.vertx:vertx-circuit-breaker",
+            "io.vertx:vertx-service-proxy",
+            "io.vertx:vertx-hazelcast",
+            "io.vertx:vertx-health-check"
 
     compileOnly "org.jetbrains.xodus:xodus-openAPI:${xodusVersion}",
-            "io.vertx:vertx-web-client:${vertxVersion}"
+            "io.vertx:vertx-web-client"
 }

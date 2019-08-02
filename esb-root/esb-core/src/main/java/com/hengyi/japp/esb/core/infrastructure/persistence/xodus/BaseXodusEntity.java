@@ -1,8 +1,8 @@
 package com.hengyi.japp.esb.core.infrastructure.persistence.xodus;
 
+import com.github.ixtf.japp.core.J;
 import com.google.common.collect.Maps;
 import jetbrains.exodus.entitystore.Entity;
-import org.jzb.J;
 
 import java.io.Serializable;
 import java.util.Map;

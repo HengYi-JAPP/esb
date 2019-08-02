@@ -3,11 +3,11 @@ package com.hengyi.japp.esb.sap;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.NullNode;
+import com.github.ixtf.japp.core.J;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.sap.conn.jco.*;
 import lombok.SneakyThrows;
-import org.jzb.J;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -16,7 +16,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import static org.jzb.Constant.MAPPER;
+import static com.github.ixtf.japp.core.Constant.MAPPER;
 
 /**
  * 描述：

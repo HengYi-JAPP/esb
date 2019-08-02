@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-import static org.jzb.Constant.MAPPER;
+import static com.github.ixtf.japp.core.Constant.MAPPER;
 
 /**
  * 描述：
