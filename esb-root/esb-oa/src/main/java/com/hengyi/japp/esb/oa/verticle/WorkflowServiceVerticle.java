@@ -7,6 +7,7 @@ import com.hengyi.japp.esb.oa.soap.WorkflowService.WorkflowRequestInfo;
 import com.hengyi.japp.esb.oa.soap.WorkflowService.WorkflowServicePortType;
 import io.reactivex.Completable;
 import io.reactivex.Single;
+import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.AbstractVerticle;
 import lombok.extern.slf4j.Slf4j;
 
@@ -56,7 +57,8 @@ public class WorkflowServiceVerticle extends AbstractVerticle {
                         final DoCreateWorkflowRequestCommandByYunbiao command = MAPPER.readValue(body, DoCreateWorkflowRequestCommandByYunbiao.class);
                         final WorkflowRequestInfo workflowRequestInfo = command.createWorkflowRequestInfo();
                         final WorkflowServicePortType workflowServicePortType = GUICE.getInstance(WorkflowServicePortType.class);
-                        return workflowServicePortType.doCreateWorkflowRequest(workflowRequestInfo, command.getUserid());
+                        final String data = workflowServicePortType.doCreateWorkflowRequest(workflowRequestInfo, command.getUserid());
+                        return new JsonObject().put("data", data).encode();
                     }).subscribe(it -> {
                         reply.reply(it);
                     }, err -> {

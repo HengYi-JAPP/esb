@@ -15,6 +15,7 @@ import io.vertx.reactivex.ext.web.handler.ResponseContentTypeHandler;
 import java.time.Duration;
 import java.util.Optional;
 
+import static com.hengyi.japp.esb.core.Constant.JSON_CONTENT_TYPE;
 import static com.hengyi.japp.esb.core.Constant.TEXT_CONTENT_TYPE;
 
 /**
@@ -36,7 +37,7 @@ public class OaAgentVerticle extends AbstractVerticle {
                     .map(Message::body)
                     .subscribe(rc.response()::end, rc::fail);
         });
-        router.post("/api/yunbiao/WorkflowService/doCreateWorkflowRequest").produces(TEXT_CONTENT_TYPE).handler(rc -> {
+        router.post("/api/yunbiao/WorkflowService/doCreateWorkflowRequest").produces(JSON_CONTENT_TYPE).handler(rc -> {
             final String body = rc.getBodyAsString();
             final DeliveryOptions deliveryOptions = new DeliveryOptions().setSendTimeout(Duration.ofHours(1).toMillis());
             vertx.eventBus().<String>rxSend("esb:oa:yunbiao:WorkflowService:doCreateWorkflowRequest", body, deliveryOptions)
