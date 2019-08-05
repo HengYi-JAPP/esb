@@ -2,6 +2,7 @@ package com.hengyi.japp.esb.oa;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.hengyi.japp.esb.oa.verticle.HrmServiceVerticle;
 import com.hengyi.japp.esb.oa.verticle.OaAgentVerticle;
 import com.hengyi.japp.esb.oa.verticle.WorkflowServiceVerticle;
 import io.reactivex.Completable;
@@ -22,7 +23,8 @@ public class MainVerticle extends AbstractVerticle {
         GUICE = Guice.createInjector(new GuiceOaModule(vertx));
         return Completable.mergeArray(
                 deployOaAgent().ignoreElement(),
-                deployWorkflowService().ignoreElement()
+                deployWorkflowService().ignoreElement(),
+                deployHrmServiceVerticle().ignoreElement()
         );
     }
 
@@ -41,5 +43,15 @@ public class MainVerticle extends AbstractVerticle {
                 .setMaxWorkerExecuteTimeUnit(TimeUnit.DAYS)
                 .setInstances(1000);
         return vertx.rxDeployVerticle(WorkflowServiceVerticle.class.getName(), deploymentOptions);
+    }
+
+    private Single<String> deployHrmServiceVerticle() {
+        final DeploymentOptions deploymentOptions = new DeploymentOptions()
+                .setWorker(true)
+                .setConfig(config())
+                .setMaxWorkerExecuteTime(1)
+                .setMaxWorkerExecuteTimeUnit(TimeUnit.DAYS)
+                .setInstances(1000);
+        return vertx.rxDeployVerticle(HrmServiceVerticle.class.getName(), deploymentOptions);
     }
 }

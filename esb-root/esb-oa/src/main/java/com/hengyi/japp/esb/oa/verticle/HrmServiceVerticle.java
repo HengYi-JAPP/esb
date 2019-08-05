@@ -1,8 +1,8 @@
 package com.hengyi.japp.esb.oa.verticle;
 
-import com.hengyi.japp.esb.oa.command.DeleteRequestCommand;
-import com.hengyi.japp.esb.oa.command.DoCreateWorkflowRequestCommand;
 import com.hengyi.japp.esb.oa.command.DoCreateWorkflowRequestCommandByYunbiao;
+import com.hengyi.japp.esb.oa.soap.HrmService.ArrayOfSubCompanyBean;
+import com.hengyi.japp.esb.oa.soap.HrmService.HrmServicePortType;
 import com.hengyi.japp.esb.oa.soap.WorkflowService.WorkflowRequestInfo;
 import com.hengyi.japp.esb.oa.soap.WorkflowService.WorkflowServicePortType;
 import io.reactivex.Completable;
@@ -17,31 +17,17 @@ import static com.hengyi.japp.esb.oa.MainVerticle.GUICE;
  * @author jzb 2019-08-02
  */
 @Slf4j
-public class WorkflowServiceVerticle extends AbstractVerticle {
+public class HrmServiceVerticle extends AbstractVerticle {
 
     @Override
     public Completable rxStart() {
         return Completable.mergeArray(
-                vertx.eventBus().<String>consumer("esb:oa:WorkflowService:doCreateWorkflowRequest", reply -> {
+                vertx.eventBus().<String>consumer("esb:oa:HrmService:getHrmSubcompanyInfo", reply -> {
                     final String body = reply.body();
                     Single.fromCallable(() -> {
-                        final DoCreateWorkflowRequestCommand command = MAPPER.readValue(body, DoCreateWorkflowRequestCommand.class);
-                        final WorkflowRequestInfo workflowRequestInfo = command.createWorkflowRequestInfo();
-                        final WorkflowServicePortType workflowServicePortType = GUICE.getInstance(WorkflowServicePortType.class);
-                        return workflowServicePortType.doCreateWorkflowRequest(workflowRequestInfo, command.getUserid());
-                    }).subscribe(it -> {
-                        reply.reply(it);
-                    }, err -> {
-                        log.error("", err);
-                        reply.fail(400, err.getLocalizedMessage());
-                    });
-                }).rxCompletionHandler(),
-                vertx.eventBus().<String>consumer("esb:oa:WorkflowService:deleteRequest", reply -> {
-                    final String body = reply.body();
-                    Single.fromCallable(() -> {
-                        final DeleteRequestCommand command = MAPPER.readValue(body, DeleteRequestCommand.class);
-                        final WorkflowServicePortType workflowServicePortType = GUICE.getInstance(WorkflowServicePortType.class);
-                        return workflowServicePortType.deleteRequest(command.getRequestid(), command.getUserid());
+                        final HrmServicePortType hrmServicePortType = GUICE.getInstance(HrmServicePortType.class);
+                        final ArrayOfSubCompanyBean arrayOfSubCompanyBean = hrmServicePortType.getHrmSubcompanyInfo("");
+                        return MAPPER.writeValueAsString(arrayOfSubCompanyBean.getSubCompanyBean());
                     }).subscribe(it -> {
                         reply.reply(it);
                     }, err -> {
@@ -50,7 +36,7 @@ public class WorkflowServiceVerticle extends AbstractVerticle {
                     });
                 }).rxCompletionHandler(),
 
-                vertx.eventBus().<String>consumer("esb:oa:yunbiao:WorkflowService:doCreateWorkflowRequest", reply -> {
+                vertx.eventBus().<String>consumer("esb:oa:HrmService:getHrmUserInfo", reply -> {
                     final String body = reply.body();
                     Single.fromCallable(() -> {
                         final DoCreateWorkflowRequestCommandByYunbiao command = MAPPER.readValue(body, DoCreateWorkflowRequestCommandByYunbiao.class);

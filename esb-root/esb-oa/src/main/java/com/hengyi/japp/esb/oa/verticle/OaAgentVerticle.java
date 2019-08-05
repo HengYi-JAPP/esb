@@ -43,6 +43,28 @@ public class OaAgentVerticle extends AbstractVerticle {
                     .map(Message::body)
                     .subscribe(rc.response()::end, rc::fail);
         });
+        router.post("/api/WorkflowService/deleteRequest").produces(TEXT_CONTENT_TYPE).handler(rc -> {
+            final String body = rc.getBodyAsString();
+            final DeliveryOptions deliveryOptions = new DeliveryOptions().setSendTimeout(Duration.ofHours(1).toMillis());
+            vertx.eventBus().<String>rxSend("esb:oa:WorkflowService:deleteRequest", body, deliveryOptions)
+                    .map(Message::body)
+                    .subscribe(rc.response()::end, rc::fail);
+        });
+
+        router.post("/api/HrmService/getHrmSubcompanyInfo").produces(TEXT_CONTENT_TYPE).handler(rc -> {
+            final String body = rc.getBodyAsString();
+            final DeliveryOptions deliveryOptions = new DeliveryOptions().setSendTimeout(Duration.ofHours(1).toMillis());
+            vertx.eventBus().<String>rxSend("esb:oa:HrmService:getHrmSubcompanyInfo", body, deliveryOptions)
+                    .map(Message::body)
+                    .subscribe(rc.response()::end, rc::fail);
+        });
+        router.post("/api/HrmService/getHrmUserInfo").produces(TEXT_CONTENT_TYPE).handler(rc -> {
+            final String body = rc.getBodyAsString();
+            final DeliveryOptions deliveryOptions = new DeliveryOptions().setSendTimeout(Duration.ofHours(1).toMillis());
+            vertx.eventBus().<String>rxSend("esb:oa:HrmService:getHrmUserInfo", body, deliveryOptions)
+                    .map(Message::body)
+                    .subscribe(rc.response()::end, rc::fail);
+        });
 
         final JsonObject httpConfig = Optional.ofNullable(config())
                 .map(it -> it.getJsonObject("javaCallSap"))
