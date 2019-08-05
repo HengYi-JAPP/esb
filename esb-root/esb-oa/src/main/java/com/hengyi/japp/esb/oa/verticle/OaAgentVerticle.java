@@ -52,6 +52,28 @@ public class OaAgentVerticle extends AbstractVerticle {
                     .subscribe(rc.response()::end, rc::fail);
         });
 
+        router.post("/api/BasicDataService/getHrmresourceData").produces(JSON_CONTENT_TYPE).handler(rc -> {
+            final String body = rc.getBodyAsString();
+            final DeliveryOptions deliveryOptions = new DeliveryOptions().setSendTimeout(Duration.ofHours(1).toMillis());
+            vertx.eventBus().<String>rxSend("esb:oa:BasicDataService:getHrmresourceData", body, deliveryOptions)
+                    .map(Message::body)
+                    .subscribe(rc.response()::end, rc::fail);
+        });
+        router.post("/api/BasicDataService/getDepartmentData").produces(JSON_CONTENT_TYPE).handler(rc -> {
+            final String body = rc.getBodyAsString();
+            final DeliveryOptions deliveryOptions = new DeliveryOptions().setSendTimeout(Duration.ofHours(1).toMillis());
+            vertx.eventBus().<String>rxSend("esb:oa:BasicDataService:getDepartmentData", body, deliveryOptions)
+                    .map(Message::body)
+                    .subscribe(rc.response()::end, rc::fail);
+        });
+        router.post("/api/BasicDataService/getSubcompanyData").produces(JSON_CONTENT_TYPE).handler(rc -> {
+            final String body = rc.getBodyAsString();
+            final DeliveryOptions deliveryOptions = new DeliveryOptions().setSendTimeout(Duration.ofHours(1).toMillis());
+            vertx.eventBus().<String>rxSend("esb:oa:BasicDataService:getSubcompanyData", body, deliveryOptions)
+                    .map(Message::body)
+                    .subscribe(rc.response()::end, rc::fail);
+        });
+
         router.post("/api/HrmService/getHrmSubcompanyInfo").produces(TEXT_CONTENT_TYPE).handler(rc -> {
             final String body = rc.getBodyAsString();
             final DeliveryOptions deliveryOptions = new DeliveryOptions().setSendTimeout(Duration.ofHours(1).toMillis());

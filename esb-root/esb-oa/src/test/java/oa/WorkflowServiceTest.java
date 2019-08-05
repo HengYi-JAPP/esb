@@ -9,7 +9,7 @@ import com.hengyi.japp.esb.oa.soap.WorkflowService.WorkflowServicePortType;
  * @author jzb 2019-08-02
  */
 public class WorkflowServiceTest {
-    private static final WorkflowServicePortType workflowServiceHttpPort = new WorkflowService().getWorkflowServiceHttpPort();
+    private static final WorkflowServicePortType workflowServicePortType = new WorkflowService().getWorkflowServiceHttpPort();
 
     public static void main(String[] args) {
         final DoCreateWorkflowRequestCommand command = DoCreateWorkflowRequestCommand.test();

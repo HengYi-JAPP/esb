@@ -4,6 +4,8 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import com.hengyi.japp.esb.core.GuiceModule;
+import com.hengyi.japp.esb.oa.soap.BasicDataService.BasicDataService;
+import com.hengyi.japp.esb.oa.soap.BasicDataService.BasicDataServicePortType;
 import com.hengyi.japp.esb.oa.soap.HrmService.HrmService;
 import com.hengyi.japp.esb.oa.soap.HrmService.HrmServicePortType;
 import com.hengyi.japp.esb.oa.soap.WorkflowService.WorkflowService;
@@ -33,6 +35,16 @@ public class GuiceOaModule extends GuiceModule {
         final URL url = new URL(wsdl.getString("WorkflowService"));
         final WorkflowService workflowService = new WorkflowService(url);
         return workflowService.getWorkflowServiceHttpPort();
+    }
+
+    @SneakyThrows
+    @Provides
+    @Singleton
+    private BasicDataServicePortType BasicDataServicePortType(@Named("vertxConfig") JsonObject vertxConfig) {
+        final JsonObject wsdl = vertxConfig.getJsonObject("wsdl");
+        final URL url = new URL(wsdl.getString("BasicDataService"));
+        final BasicDataService basicDataService = new BasicDataService(url);
+        return basicDataService.getBasicDataServiceHttpPort();
     }
 
     @SneakyThrows
