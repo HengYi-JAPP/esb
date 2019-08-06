@@ -1,8 +1,8 @@
 package old;
 
+import com.github.ixtf.japp.core.J;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.Vertx;
-import org.jzb.J;
 import org.pac4j.cas.client.CasClient;
 import org.pac4j.cas.client.CasProxyReceptor;
 import org.pac4j.cas.config.CasConfiguration;

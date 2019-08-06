@@ -1,7 +1,9 @@
 package com.hengyi.japp.esb.core;
 
+import com.hengyi.japp.esb.core.apm.RCTextMapExtractAdapter;
 import com.hengyi.japp.esb.core.apm.RCTextMapInjectAdapter;
 import io.opentracing.Span;
+import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.tag.Tags;
 import io.vertx.core.eventbus.DeliveryOptions;
@@ -13,6 +15,8 @@ import io.vertx.reactivex.core.eventbus.Message;
 import io.vertx.reactivex.core.http.HttpServerRequest;
 import io.vertx.reactivex.ext.auth.jwt.JWTAuth;
 import io.vertx.reactivex.ext.web.RoutingContext;
+import lombok.Cleanup;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.FileReader;
@@ -85,15 +89,48 @@ public class Util {
         span.finish();
     }
 
-    public static Properties readProperties(String first, String... more) {
+    public static Span initApm(Message reply, Tracer tracer, Object component, String operationName, String address) {
         try {
-            final Path path = Paths.get(first, more);
-            final Properties properties = new Properties();
-            properties.load(new FileReader(path.toFile()));
-            return properties;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            final SpanContext spanContext = tracer.extract(TEXT_MAP, new RCTextMapExtractAdapter(reply));
+            final Tracer.SpanBuilder spanBuilder = tracer.buildSpan(operationName)
+                    .withTag(Tags.COMPONENT, component.getClass().getName())
+                    .withTag(Tags.SPAN_KIND, Tags.SPAN_KIND_CONSUMER)
+                    .withTag(Tags.MESSAGE_BUS_DESTINATION, address);
+            if (spanContext != null) {
+                spanBuilder.asChildOf(spanContext);
+            }
+            return spanBuilder.start();
+        } catch (Throwable e) {
+            log.error("initApm", e);
+            return null;
         }
+    }
+
+    public static void apmSuccess(Message reply, Span span, String message) {
+        if (span == null) {
+            return;
+        }
+        span.setTag(Tags.ERROR, false);
+        span.log(message);
+        span.finish();
+    }
+
+    public static void apmError(Message reply, Span span, Throwable err) {
+        if (span == null) {
+            return;
+        }
+        span.setTag(Tags.ERROR, true);
+        span.log(err.getMessage());
+        span.finish();
+    }
+
+    @SneakyThrows
+    public static Properties readProperties(String first, String... more) {
+        final Path path = Paths.get(first, more);
+        final Properties properties = new Properties();
+        @Cleanup final FileReader reader = new FileReader(path.toFile());
+        properties.load(reader);
+        return properties;
     }
 
     public static <T> T readJson(Class<T> clazz, String json) {

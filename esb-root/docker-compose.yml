@@ -13,70 +13,32 @@ services:
   #    ports:
   #      - "9999:9999"
 
-  #  esb-auth:
-  #    image: hengyi/esb-auth:1.0
-  #    container_name: esb-auth
-  #    volumes:
-  #      - type: bind
-  #        source: /home/esb/esb-auth
-  #        target: /home/esb/esb-auth
-  #    expose:
-  #      - "9998"
-  #    ports:
-  #      - "9998:9998"
-
-  esb-sap:
-    image: hengyi/esb-sap:1.0
-    container_name: esb-sap
+  esb-auth:
+    image: hengyi/esb-auth:2.0
+    container_name: esb-auth
     volumes:
       - type: bind
-        source: /home/esb/esb-sap
-        target: /home/esb/esb-sap
+        source: /home/esb/esb-auth
+        target: /home/esb/esb-auth
     expose:
-      - "9997"
-      - "9876"
+      - "9998"
     ports:
-      - "9997:9997"
-      - "9876:9876"
+      - "9998:9998"
 
-  es01:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.3.0
-    container_name: es01
-    environment:
-      - node.name=es01
-      - discovery.seed_hosts=es02
-      - cluster.initial_master_nodes=es01,es02
-      - cluster.name=esb-es-cluster
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    volumes:
-      - ./es/esdata01:/usr/share/elasticsearch/data
-    ports:
-      - 9200:9200
-    networks:
-      - esnet
-  es02:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.3.0
-    container_name: es02
-    environment:
-      - node.name=es02
-      - discovery.seed_hosts=es01
-      - cluster.initial_master_nodes=es01,es02
-      - cluster.name=esb-es-cluster
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    volumes:
-      - ./es/esdata02:/usr/share/elasticsearch/data
-    networks:
-      - esnet
+#  esb-sap:
+#    image: hengyi/esb-sap:1.0
+#    container_name: esb-sap
+#    volumes:
+#      - type: bind
+#        source: /home/esb/esb-sap
+#        target: /home/esb/esb-sap
+#    expose:
+#      - "9997"
+#      - "9876"
+#    ports:
+#      - "9997:9997"
+#      - "9876:9876"
+
 #  esb-sms:
 #    image: hengyi/esb-sms
 #    container_name: esb-sms
@@ -100,5 +62,3 @@ services:
 #      - "9995"
 #    ports:
 #      - "9995:9995"
-networks:
-  esnet:

@@ -10,4 +10,4 @@ dependencies {
             'org.apache.cxf:cxf-rt-transports-http:3.3.2'
 }
 
-mainClassName = "com.hengyi.japp.esb.oa.MainVerticle"
+mainClassName = "com.hengyi.japp.esb.oa.OaVerticle"

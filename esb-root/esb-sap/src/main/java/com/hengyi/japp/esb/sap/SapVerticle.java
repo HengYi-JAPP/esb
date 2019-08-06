@@ -4,7 +4,6 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.hengyi.japp.esb.core.GuiceModule;
 import com.hengyi.japp.esb.core.MainVerticle;
-import com.hengyi.japp.esb.core.Util;
 import com.hengyi.japp.esb.sap.application.internal.JcoDataProvider;
 import com.hengyi.japp.esb.sap.verticle.JavaCallSapAgentVerticle;
 import com.hengyi.japp.esb.sap.verticle.JavaCallSapWorkerVerticle;
@@ -26,7 +25,7 @@ public class SapVerticle extends MainVerticle {
     public static Injector SAP_INJECTOR;
 
     public static void main(String[] args) {
-        JcoDataProvider.init(Util.readProperties("/home/esb/esb-sap", "sap.properties"));
+        JcoDataProvider.init("/home/esb/esb-sap");
         Single.fromCallable(() -> deploymentOptions("/home/esb/esb-sap")).flatMap(deploymentOptions -> {
             final Vertx vertx = vertx();
             SAP_INJECTOR = Guice.createInjector(new GuiceModule(vertx), new SapGuiceModule());
