@@ -1,10 +1,8 @@
 package com.hengyi.japp.esb.oa.verticle;
 
-import com.hengyi.japp.esb.oa.command.DoCreateWorkflowRequestCommandByYunbiao;
 import com.hengyi.japp.esb.oa.soap.HrmService.ArrayOfSubCompanyBean;
+import com.hengyi.japp.esb.oa.soap.HrmService.ArrayOfUserBean;
 import com.hengyi.japp.esb.oa.soap.HrmService.HrmServicePortType;
-import com.hengyi.japp.esb.oa.soap.WorkflowService.WorkflowRequestInfo;
-import com.hengyi.japp.esb.oa.soap.WorkflowService.WorkflowServicePortType;
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.vertx.reactivex.core.AbstractVerticle;
@@ -23,7 +21,6 @@ public class HrmServiceVerticle extends AbstractVerticle {
     public Completable rxStart() {
         return Completable.mergeArray(
                 vertx.eventBus().<String>consumer("esb:oa:HrmService:getHrmSubcompanyInfo", reply -> {
-                    final String body = reply.body();
                     Single.fromCallable(() -> {
                         final HrmServicePortType hrmServicePortType = GUICE.getInstance(HrmServicePortType.class);
                         final ArrayOfSubCompanyBean arrayOfSubCompanyBean = hrmServicePortType.getHrmSubcompanyInfo("");
@@ -37,12 +34,10 @@ public class HrmServiceVerticle extends AbstractVerticle {
                 }).rxCompletionHandler(),
 
                 vertx.eventBus().<String>consumer("esb:oa:HrmService:getHrmUserInfo", reply -> {
-                    final String body = reply.body();
                     Single.fromCallable(() -> {
-                        final DoCreateWorkflowRequestCommandByYunbiao command = MAPPER.readValue(body, DoCreateWorkflowRequestCommandByYunbiao.class);
-                        final WorkflowRequestInfo workflowRequestInfo = command.createWorkflowRequestInfo();
-                        final WorkflowServicePortType workflowServicePortType = GUICE.getInstance(WorkflowServicePortType.class);
-                        return workflowServicePortType.doCreateWorkflowRequest(workflowRequestInfo, command.getUserid());
+                        final HrmServicePortType hrmServicePortType = GUICE.getInstance(HrmServicePortType.class);
+                        final ArrayOfUserBean arrayOfUserBean = hrmServicePortType.getHrmUserInfo(null, null, null, null, null, null);
+                        return MAPPER.writeValueAsString(arrayOfUserBean.getUserBean());
                     }).subscribe(it -> {
                         reply.reply(it);
                     }, err -> {

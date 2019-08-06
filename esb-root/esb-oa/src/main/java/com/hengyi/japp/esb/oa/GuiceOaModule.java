@@ -10,6 +10,11 @@ import com.hengyi.japp.esb.oa.soap.HrmService.HrmService;
 import com.hengyi.japp.esb.oa.soap.HrmService.HrmServicePortType;
 import com.hengyi.japp.esb.oa.soap.WorkflowService.WorkflowService;
 import com.hengyi.japp.esb.oa.soap.WorkflowService.WorkflowServicePortType;
+import io.jaegertracing.Configuration;
+import io.jaegertracing.Configuration.ReporterConfiguration;
+import io.jaegertracing.Configuration.SamplerConfiguration;
+import io.jaegertracing.Configuration.SenderConfiguration;
+import io.opentracing.Tracer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.Vertx;
 import lombok.SneakyThrows;
@@ -55,5 +60,17 @@ public class GuiceOaModule extends GuiceModule {
         final URL url = new URL(wsdl.getString("HrmService"));
         final HrmService hrmService = new HrmService(url);
         return hrmService.getHrmServiceHttpPort();
+    }
+
+    @SneakyThrows
+    @Provides
+    @Singleton
+    private Tracer Tracer(@Named("vertxConfig") JsonObject vertxConfig) {
+        final JsonObject apm = vertxConfig.getJsonObject("apm");
+        final SamplerConfiguration samplerConfig = SamplerConfiguration.fromEnv().withType("const").withParam(1);
+        final SenderConfiguration senderConfiguration = new SenderConfiguration().withAgentHost(apm.getString("agentHost"));
+        final ReporterConfiguration reporterConfig = ReporterConfiguration.fromEnv().withSender(senderConfiguration).withLogSpans(true);
+        final Configuration config = new Configuration("esb-oa").withSampler(samplerConfig).withReporter(reporterConfig);
+        return config.getTracer();
     }
 }

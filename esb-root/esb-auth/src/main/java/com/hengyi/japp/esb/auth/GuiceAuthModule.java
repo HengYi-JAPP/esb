@@ -2,6 +2,7 @@ package com.hengyi.japp.esb.auth;
 
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 import com.hengyi.japp.esb.auth.application.AuthService;
 import com.hengyi.japp.esb.auth.application.internal.AuthServiceImpl;
 import com.hengyi.japp.esb.core.GuiceModule;
@@ -28,8 +29,8 @@ public class GuiceAuthModule extends GuiceModule {
 
     @Provides
     @Singleton
-    protected JWTAuth JWTAuth() {
-        final JsonObject jwt = vertxConfig().getJsonObject("jwt");
+    protected JWTAuth JWTAuth(Vertx vertx, @Named("vertxConfig") JsonObject vertxConfig) {
+        final JsonObject jwt = vertxConfig.getJsonObject("jwt");
         return JWTAuth.create(vertx, new JWTAuthOptions(jwt));
     }
 }

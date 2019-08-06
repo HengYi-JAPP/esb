@@ -1,5 +1,5 @@
 rootProject.name = 'esb-root'
-include 'esb-api'
+include 'esb-agent'
 include 'esb-core'
 include 'esb-open'
 include 'esb-auth'

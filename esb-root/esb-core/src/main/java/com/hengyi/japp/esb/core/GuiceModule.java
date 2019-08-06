@@ -17,7 +17,7 @@ import java.io.IOException;
  * @author jzb 2018-03-21
  */
 public abstract class GuiceModule extends AbstractModule {
-    protected final Vertx vertx;
+    private final Vertx vertx;
 
     protected GuiceModule(Vertx vertx) {
         this.vertx = vertx;
@@ -26,35 +26,35 @@ public abstract class GuiceModule extends AbstractModule {
     @Provides
     @Singleton
     @Named("vertxConfig")
-    protected JsonObject vertxConfig() {
+    private JsonObject vertxConfig() {
         return vertx.getOrCreateContext().config();
     }
 
     @Provides
     @Singleton
     @Named("rootPath")
-    protected String rootPath() {
+    private String rootPath() {
         return vertxConfig().getString("rootPath");
     }
 
     @Provides
-    protected HttpClient HttpClient() {
+    private HttpClient HttpClient() {
         return vertx.createHttpClient();
     }
 
     @Provides
-    protected WebClient WebClient() {
+    private WebClient WebClient() {
         return WebClient.create(vertx);
     }
 
     @Provides
-    protected Scheduler Scheduler() {
+    private Scheduler Scheduler() {
         return RxHelper.scheduler(vertx);
     }
 
     @Provides
     @Singleton
-    protected Vertx vertx() throws IOException {
+    private Vertx vertx() throws IOException {
         return vertx;
     }
 }

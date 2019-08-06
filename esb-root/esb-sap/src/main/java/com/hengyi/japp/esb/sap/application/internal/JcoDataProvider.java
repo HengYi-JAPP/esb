@@ -27,7 +27,7 @@ public class JcoDataProvider implements DestinationDataProvider, ServerDataProvi
                 .forEach(k -> System.out.println("===" + k + "=" + properties.get(k) + "==="));
     }
 
-    public static void init(Properties properties) {
+    synchronized public static void init(Properties properties) {
         if (Environment.isDestinationDataProviderRegistered()) {
             return;
         }
