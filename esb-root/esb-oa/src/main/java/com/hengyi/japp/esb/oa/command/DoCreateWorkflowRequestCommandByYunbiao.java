@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.hengyi.japp.esb.oa.dto.*;
 import com.hengyi.japp.esb.oa.soap.WorkflowService.WorkflowRequestInfo;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -19,6 +20,7 @@ import static java.util.stream.Collectors.toList;
  * @author jzb 2019-08-02
  */
 @Data
+@NoArgsConstructor
 public class DoCreateWorkflowRequestCommandByYunbiao implements Serializable {
     private int userid;
     private WorkflowRequestInfoDTOByYunbiao workflowRequestInfo;
@@ -50,7 +52,10 @@ public class DoCreateWorkflowRequestCommandByYunbiao implements Serializable {
     }
 
     private WorkflowRequestInfoDTO convertWorkflowRequestInfo() {
-        return MAPPER.convertValue(workflowRequestInfo, WorkflowRequestInfoDTO.class);
+        final WorkflowRequestInfoDTO result = MAPPER.convertValue(workflowRequestInfo, WorkflowRequestInfoDTO.class);
+        result.setCanView(true);
+        result.setCanEdit(true);
+        return result;
     }
 
     private WorkflowBaseInfoDTO convertWorkflowBaseInfo() {
@@ -81,15 +86,15 @@ public class DoCreateWorkflowRequestCommandByYunbiao implements Serializable {
     }
 
     @Data
+    @NoArgsConstructor
     public static class WorkflowRequestInfoDTOByYunbiao implements Serializable {
-        protected Boolean canEdit;
-        protected Boolean canView;
-        protected String creatorId;
-        protected String requestName;
-        protected String requestLevel;
+        private String creatorId;
+        private String requestName;
+        private String requestLevel;
     }
 
     @Data
+    @NoArgsConstructor
     public static class WorkflowBaseInfoDTOByYunbiao implements Serializable {
         private String workflowId;
         private String workflowName;

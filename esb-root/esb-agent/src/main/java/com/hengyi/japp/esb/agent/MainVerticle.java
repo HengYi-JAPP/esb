@@ -2,7 +2,7 @@ package com.hengyi.japp.esb.agent;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.hengyi.japp.esb.auth.verticle.AuthVerticle;
+import com.hengyi.japp.esb.auth.verticle.AuthAgentVerticle;
 import io.reactivex.Completable;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.reactivex.core.AbstractVerticle;
@@ -19,7 +19,7 @@ public class MainVerticle extends AbstractVerticle {
 
         final DeploymentOptions deploymentOptions = new DeploymentOptions().setConfig(config());
         return Completable.mergeArray(
-                vertx.rxDeployVerticle(AuthVerticle.class.getName(), deploymentOptions).ignoreElement()
+                vertx.rxDeployVerticle(AuthAgentVerticle.class.getName(), deploymentOptions).ignoreElement()
         );
     }
 

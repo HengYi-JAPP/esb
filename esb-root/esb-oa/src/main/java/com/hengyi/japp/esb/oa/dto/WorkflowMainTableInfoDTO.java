@@ -7,6 +7,7 @@ import com.hengyi.japp.esb.oa.soap.WorkflowService.WorkflowMainTableInfo;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.xml.bind.JAXBElement;
 import java.io.Serializable;
 import java.util.List;
 
@@ -25,7 +26,7 @@ public class WorkflowMainTableInfoDTO implements Serializable {
         this.requestRecords = requestRecords;
     }
 
-    public WorkflowMainTableInfo createWorkflowMainTableInfo() {
+    public JAXBElement<WorkflowMainTableInfo> createWorkflowMainTableInfo() {
         final WorkflowMainTableInfo workflowMainTableInfo = objectFactory.createWorkflowMainTableInfo();
         if (J.nonBlank(tableDBName)) {
             workflowMainTableInfo.setTableDBName(objectFactory.createWorkflowMainTableInfoTableDBName(tableDBName));
@@ -37,6 +38,6 @@ public class WorkflowMainTableInfoDTO implements Serializable {
                     .forEach(arrayOfWorkflowRequestTableRecord.getWorkflowRequestTableRecord()::add);
             workflowMainTableInfo.setRequestRecords(objectFactory.createWorkflowMainTableInfoRequestRecords(arrayOfWorkflowRequestTableRecord));
         }
-        return workflowMainTableInfo;
+        return objectFactory.createWorkflowRequestInfoWorkflowMainTableInfo(workflowMainTableInfo);
     }
 }

@@ -5,6 +5,7 @@ import com.hengyi.japp.esb.oa.soap.WorkflowService.ObjectFactory;
 import com.hengyi.japp.esb.oa.soap.WorkflowService.WorkflowBaseInfo;
 import lombok.Data;
 
+import javax.xml.bind.JAXBElement;
 import java.io.Serializable;
 
 /**
@@ -23,7 +24,7 @@ public class WorkflowBaseInfoDTO implements Serializable {
     private String workflowTypeId;
     private String workflowTypeName;
 
-    public WorkflowBaseInfo createWorkflowBaseInfo() {
+    public JAXBElement<WorkflowBaseInfo> createWorkflowBaseInfo() {
         final WorkflowBaseInfo workflowBaseInfo = objectFactory.createWorkflowBaseInfo();
         if (J.nonBlank(workflowId)) {
             workflowBaseInfo.setWorkflowId(objectFactory.createWorkflowBaseInfoWorkflowId(workflowId));
@@ -37,6 +38,6 @@ public class WorkflowBaseInfoDTO implements Serializable {
         if (J.nonBlank(workflowTypeName)) {
             workflowBaseInfo.setWorkflowTypeName(objectFactory.createWorkflowBaseInfoWorkflowTypeName(workflowTypeName));
         }
-        return workflowBaseInfo;
+        return objectFactory.createWorkflowRequestInfoWorkflowBaseInfo(workflowBaseInfo);
     }
 }

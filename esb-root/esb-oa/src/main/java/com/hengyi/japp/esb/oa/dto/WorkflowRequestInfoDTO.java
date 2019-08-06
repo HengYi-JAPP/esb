@@ -41,8 +41,8 @@ public class WorkflowRequestInfoDTO implements Serializable {
 
     public WorkflowRequestInfo createWorkflowRequestInfo() {
         final WorkflowRequestInfo workflowRequestInfo = objectFactory.createWorkflowRequestInfo();
-        workflowRequestInfo.setCanEdit(true);
-        workflowRequestInfo.setCanView(true);
+        workflowRequestInfo.setCanEdit(canEdit);
+        workflowRequestInfo.setCanView(canView);
         workflowRequestInfo.setRequestLevel(objectFactory.createWorkflowRequestInfoRequestLevel(requestLevel));
         workflowRequestInfo.setCreatorId(objectFactory.createWorkflowRequestInfoCreatorId(creatorId));//创建者ID 创建流程时为必输项
         workflowRequestInfo.setRequestName(objectFactory.createWorkflowRequestInfoRequestName(requestName));//请求标题

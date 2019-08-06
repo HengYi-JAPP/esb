@@ -4,6 +4,7 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import com.hengyi.japp.esb.core.GuiceModule;
+import com.hengyi.japp.esb.core.Util;
 import com.hengyi.japp.esb.oa.soap.BasicDataService.BasicDataService;
 import com.hengyi.japp.esb.oa.soap.BasicDataService.BasicDataServicePortType;
 import com.hengyi.japp.esb.oa.soap.HrmService.HrmService;
@@ -35,8 +36,16 @@ public class GuiceOaModule extends GuiceModule {
     @SneakyThrows
     @Provides
     @Singleton
-    private WorkflowServicePortType WorkflowServicePortType(@Named("vertxConfig") JsonObject vertxConfig) {
-        final JsonObject wsdl = vertxConfig.getJsonObject("wsdl");
+    @Named("esb-oa-config")
+    private JsonObject EsbOaConfig(@Named("esb-config") JsonObject esbConfig) {
+        return Util.readJsonObject(esbConfig.getString("rootPath"), "esb-oa", "config.json");
+    }
+
+    @SneakyThrows
+    @Provides
+    @Singleton
+    private WorkflowServicePortType WorkflowServicePortType(@Named("esb-oa-config") JsonObject esbOaConfig) {
+        final JsonObject wsdl = esbOaConfig.getJsonObject("wsdl");
         final URL url = new URL(wsdl.getString("WorkflowService"));
         final WorkflowService workflowService = new WorkflowService(url);
         return workflowService.getWorkflowServiceHttpPort();
@@ -45,8 +54,8 @@ public class GuiceOaModule extends GuiceModule {
     @SneakyThrows
     @Provides
     @Singleton
-    private BasicDataServicePortType BasicDataServicePortType(@Named("vertxConfig") JsonObject vertxConfig) {
-        final JsonObject wsdl = vertxConfig.getJsonObject("wsdl");
+    private BasicDataServicePortType BasicDataServicePortType(@Named("esb-oa-config") JsonObject esbOaConfig) {
+        final JsonObject wsdl = esbOaConfig.getJsonObject("wsdl");
         final URL url = new URL(wsdl.getString("BasicDataService"));
         final BasicDataService basicDataService = new BasicDataService(url);
         return basicDataService.getBasicDataServiceHttpPort();
@@ -55,8 +64,8 @@ public class GuiceOaModule extends GuiceModule {
     @SneakyThrows
     @Provides
     @Singleton
-    private HrmServicePortType HrmServicePortType(@Named("vertxConfig") JsonObject vertxConfig) {
-        final JsonObject wsdl = vertxConfig.getJsonObject("wsdl");
+    private HrmServicePortType HrmServicePortType(@Named("esb-oa-config") JsonObject esbOaConfig) {
+        final JsonObject wsdl = esbOaConfig.getJsonObject("wsdl");
         final URL url = new URL(wsdl.getString("HrmService"));
         final HrmService hrmService = new HrmService(url);
         return hrmService.getHrmServiceHttpPort();

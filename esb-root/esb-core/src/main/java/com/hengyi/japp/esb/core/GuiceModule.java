@@ -3,38 +3,48 @@ package com.hengyi.japp.esb.core;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+import io.jaegertracing.Configuration;
+import io.jaegertracing.Configuration.ReporterConfiguration;
+import io.jaegertracing.Configuration.SamplerConfiguration;
+import io.jaegertracing.Configuration.SenderConfiguration;
+import io.opentracing.Tracer;
 import io.reactivex.Scheduler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.RxHelper;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.http.HttpClient;
 import io.vertx.reactivex.ext.web.client.WebClient;
+import lombok.SneakyThrows;
 
 import javax.inject.Named;
-import java.io.IOException;
 
 /**
  * @author jzb 2018-03-21
  */
-public abstract class GuiceModule extends AbstractModule {
+public class GuiceModule extends AbstractModule {
     private final Vertx vertx;
 
-    protected GuiceModule(Vertx vertx) {
+    public GuiceModule(Vertx vertx) {
         this.vertx = vertx;
     }
 
     @Provides
     @Singleton
-    @Named("vertxConfig")
-    private JsonObject vertxConfig() {
-        return vertx.getOrCreateContext().config();
+    @Named("esb-config")
+    private JsonObject esbConfig() {
+        return Util.readJsonObject("/home/esb", "config.json");
     }
 
+    @SneakyThrows
     @Provides
     @Singleton
-    @Named("rootPath")
-    private String rootPath() {
-        return vertxConfig().getString("rootPath");
+    private Tracer Tracer(@Named("esb-config") JsonObject esbConfig) {
+        final JsonObject apm = esbConfig.getJsonObject("apm");
+        final SamplerConfiguration samplerConfig = SamplerConfiguration.fromEnv().withType("const").withParam(1);
+        final SenderConfiguration senderConfiguration = new SenderConfiguration().withAgentHost(apm.getString("agentHost"));
+        final ReporterConfiguration reporterConfig = ReporterConfiguration.fromEnv().withSender(senderConfiguration).withLogSpans(true);
+        final Configuration config = new Configuration("esb-oa").withSampler(samplerConfig).withReporter(reporterConfig);
+        return config.getTracer();
     }
 
     @Provides
@@ -54,7 +64,7 @@ public abstract class GuiceModule extends AbstractModule {
 
     @Provides
     @Singleton
-    private Vertx vertx() throws IOException {
+    private Vertx vertx() {
         return vertx;
     }
 }

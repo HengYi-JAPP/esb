@@ -3,7 +3,7 @@ package com.hengyi.japp.esb.agent.verticle;
 import com.hengyi.japp.esb.core.Util;
 import io.reactivex.Completable;
 import io.vertx.core.eventbus.DeliveryOptions;
-import io.vertx.core.json.JsonObject;
+import io.vertx.core.http.HttpServerOptions;
 import io.vertx.reactivex.core.AbstractVerticle;
 import io.vertx.reactivex.core.eventbus.Message;
 import io.vertx.reactivex.ext.auth.jwt.JWTAuth;
@@ -13,7 +13,6 @@ import io.vertx.reactivex.ext.web.handler.JWTAuthHandler;
 import io.vertx.reactivex.ext.web.handler.ResponseContentTypeHandler;
 
 import java.time.Duration;
-import java.util.Optional;
 
 import static com.hengyi.japp.esb.core.Constant.JSON_CONTENT_TYPE;
 import static com.hengyi.japp.esb.core.Constant.TEXT_CONTENT_TYPE;
@@ -89,14 +88,12 @@ public class OaAgentVerticle extends AbstractVerticle {
                     .subscribe(rc.response()::end, rc::fail);
         });
 
-        final JsonObject httpConfig = Optional.ofNullable(config())
-                .map(it -> it.getJsonObject("javaCallSap"))
-                .map(it -> it.getJsonObject("http"))
-                .orElse(new JsonObject());
-        final Integer port = httpConfig.getInteger("port", 9996);
-        return vertx.createHttpServer()
+        final HttpServerOptions httpServerOptions = new HttpServerOptions()
+                .setDecompressionSupported(true)
+                .setCompressionSupported(true);
+        return vertx.createHttpServer(httpServerOptions)
                 .requestHandler(router)
-                .rxListen(port)
+                .rxListen(9996)
                 .ignoreElement();
     }
 }
