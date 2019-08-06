@@ -1,5 +1,0 @@
-dependencies {
-    compile project(':esb-auth'),
-            project(':esb-sap'),
-            project(':esb-oa')
-}

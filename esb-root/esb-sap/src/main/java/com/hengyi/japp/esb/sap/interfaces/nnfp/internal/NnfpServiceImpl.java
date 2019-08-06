@@ -6,6 +6,7 @@ import com.hengyi.japp.esb.core.Util;
 import com.hengyi.japp.esb.sap.interfaces.nnfp.NnfpService;
 import io.reactivex.Single;
 import io.vertx.reactivex.core.MultiMap;
+import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.ext.web.client.HttpResponse;
 import io.vertx.reactivex.ext.web.client.WebClient;
 
@@ -19,9 +20,9 @@ public class NnfpServiceImpl implements NnfpService {
     private final WebClient webClient;
 
     @Inject
-    NnfpServiceImpl(@Named("rootPath") String rootPath, WebClient webClient) {
+    NnfpServiceImpl(Vertx vertx, @Named("rootPath") String rootPath) {
         this.nnfpConfig = Util.readProperties(rootPath, "nnfp.config.properties");
-        this.webClient = webClient;
+        this.webClient = WebClient.create(vertx);
     }
 
     @Override

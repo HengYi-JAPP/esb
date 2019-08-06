@@ -4,7 +4,7 @@ dependencies {
             "io.vertx:vertx-web-client"
 }
 
-mainClassName = "com.hengyi.japp.esb.sap.Main"
+mainClassName = "com.hengyi.japp.esb.sap.SapVerticle"
 
 docker {
     files "/home/jzb/yun/Sap/ABAP/JCO/sapjco3-linuxx86_64-3.0.9/libsapjco3.so"

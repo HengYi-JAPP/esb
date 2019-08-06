@@ -1,17 +1,13 @@
 //  /opt/apache-cxf-3.3.2/bin/wsdl2java -clientjar oa-BasicDataService-wsimport.jar -d /home/jzb/Templates/lib -p com.hengyi.japp.esb.oa.soap.BasicDataService http://220.189.213.71:8077//services/WorkflowService?wsdl
 dependencies {
     compile project(':esb-core'),
-            files(
-                    '/home/jzb/Templates/lib/oa-HrmService-wsimport.jar',
-                    '/home/jzb/Templates/lib/oa-WorkflowService-wsimport.jar',
-                    '/home/jzb/Templates/lib/oa-BasicDataService-wsimport.jar'
-            )
-    compile group: 'com.sun.xml.ws', name: 'jaxws-ri', version: '2.3.2'
-    compile group: 'com.sun.xml.ws', name: 'jaxws-tools', version: '2.3.2'
-    compile group: 'org.apache.cxf', name: 'cxf-rt-frontend-jaxws', version: '3.3.2'
-    compile group: 'org.apache.cxf', name: 'cxf-rt-transports-http', version: '3.3.2'
-//    compile group: 'wsdl4j', name: 'wsdl4j', version: '1.6.3'
-//    compile group: 'axis', name: 'axis', version: '1.4'
+            files('/home/jzb/Templates/lib/oa-WorkflowService-wsimport.jar',
+                    '/home/jzb/Templates/lib/oa-BasicDataService-wsimport.jar',
+                    '/home/jzb/Templates/lib/oa-HrmService-wsimport.jar'),
+            'com.sun.xml.ws:jaxws-ri:2.3.2',
+            'com.sun.xml.ws:jaxws-tools:2.3.2',
+            'org.apache.cxf:cxf-rt-frontend-jaxws:3.3.2',
+            'org.apache.cxf:cxf-rt-transports-http:3.3.2'
 }
 
-mainClassName = "com.hengyi.japp.esb.oa.Main"
+mainClassName = "com.hengyi.japp.esb.oa.MainVerticle"

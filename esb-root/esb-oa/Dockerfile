@@ -20,4 +20,8 @@ CMD ["exec java --add-modules java.se \
 --add-opens java.base/sun.nio.ch=ALL-UNNAMED \
 --add-opens java.management/sun.management=ALL-UNNAMED \
 --add-opens jdk.management/com.sun.management.internal=ALL-UNNAMED \
-$JAVA_OPTIONS -jar $VERTICLE_FILE -conf /home/esb/esb-oa/config.json -Dvertx.metrics.options.enabled=true -Dvertx.metrics.options.jmxEnabled=true"]
+$JAVA_OPTIONS \
+-jar $VERTICLE_FILE \
+-conf /home/esb/esb-oa/config.json \
+-Dvertx.metrics.options.enabled=true \
+-Dvertx.metrics.options.jmxEnabled=true"]

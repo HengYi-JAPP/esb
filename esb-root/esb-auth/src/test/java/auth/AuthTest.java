@@ -1,6 +1,6 @@
 package auth;
 
-import com.hengyi.japp.esb.auth.MainVerticle;
+import com.hengyi.japp.esb.auth.AuthVerticle;
 import com.hengyi.japp.esb.core.Constant;
 import com.hengyi.japp.esb.core.Util;
 import io.vertx.core.DeploymentOptions;
@@ -59,7 +59,7 @@ public class AuthTest {
     @Before
     public void Before(TestContext context) {
         vertx = Vertx.vertx();
-        vertx.deployVerticle(MainVerticle.class.getName(), deploymentOptions, context.asyncAssertSuccess());
+        vertx.deployVerticle(AuthVerticle.class.getName(), deploymentOptions, context.asyncAssertSuccess());
     }
 
     @After

@@ -9,7 +9,7 @@ import io.vertx.reactivex.core.AbstractVerticle;
 import lombok.extern.slf4j.Slf4j;
 
 import static com.github.ixtf.japp.core.Constant.MAPPER;
-import static com.hengyi.japp.esb.oa.MainVerticle.GUICE;
+import static com.hengyi.japp.esb.oa.OaVerticle.OA_INJECTOR;
 
 /**
  * @author jzb 2019-08-02
@@ -22,7 +22,7 @@ public class HrmServiceVerticle extends AbstractVerticle {
         return Completable.mergeArray(
                 vertx.eventBus().<String>consumer("esb:oa:HrmService:getHrmSubcompanyInfo", reply -> {
                     Single.fromCallable(() -> {
-                        final HrmServicePortType hrmServicePortType = GUICE.getInstance(HrmServicePortType.class);
+                        final HrmServicePortType hrmServicePortType = OA_INJECTOR.getInstance(HrmServicePortType.class);
                         final ArrayOfSubCompanyBean arrayOfSubCompanyBean = hrmServicePortType.getHrmSubcompanyInfo("");
                         return MAPPER.writeValueAsString(arrayOfSubCompanyBean.getSubCompanyBean());
                     }).subscribe(it -> {
@@ -35,7 +35,7 @@ public class HrmServiceVerticle extends AbstractVerticle {
 
                 vertx.eventBus().<String>consumer("esb:oa:HrmService:getHrmUserInfo", reply -> {
                     Single.fromCallable(() -> {
-                        final HrmServicePortType hrmServicePortType = GUICE.getInstance(HrmServicePortType.class);
+                        final HrmServicePortType hrmServicePortType = OA_INJECTOR.getInstance(HrmServicePortType.class);
                         final ArrayOfUserBean arrayOfUserBean = hrmServicePortType.getHrmUserInfo(null, null, null, null, null, null);
                         return MAPPER.writeValueAsString(arrayOfUserBean.getUserBean());
                     }).subscribe(it -> {

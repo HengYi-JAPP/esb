@@ -6,7 +6,7 @@ import io.reactivex.Single;
 import io.vertx.reactivex.core.AbstractVerticle;
 import lombok.extern.slf4j.Slf4j;
 
-import static com.hengyi.japp.esb.oa.MainVerticle.GUICE;
+import static com.hengyi.japp.esb.oa.OaVerticle.OA_INJECTOR;
 
 /**
  * @author jzb 2019-08-02
@@ -20,7 +20,7 @@ public class BasicDataServiceVerticle extends AbstractVerticle {
                 vertx.eventBus().<String>consumer("esb:oa:BasicDataService:getHrmresourceData", reply -> {
                     final String body = reply.body();
                     Single.fromCallable(() -> {
-                        final BasicDataServicePortType basicDataServicePortType = GUICE.getInstance(BasicDataServicePortType.class);
+                        final BasicDataServicePortType basicDataServicePortType = OA_INJECTOR.getInstance(BasicDataServicePortType.class);
                         return basicDataServicePortType.getHrmresourceData("");
                     }).subscribe(it -> {
                         reply.reply(it);
@@ -32,7 +32,7 @@ public class BasicDataServiceVerticle extends AbstractVerticle {
 
                 vertx.eventBus().<String>consumer("esb:oa:BasicDataService:getDepartmentData", reply -> {
                     Single.fromCallable(() -> {
-                        final BasicDataServicePortType basicDataServicePortType = GUICE.getInstance(BasicDataServicePortType.class);
+                        final BasicDataServicePortType basicDataServicePortType = OA_INJECTOR.getInstance(BasicDataServicePortType.class);
                         return basicDataServicePortType.getDepartmentData("");
                     }).subscribe(it -> {
                         reply.reply(it);
@@ -44,7 +44,7 @@ public class BasicDataServiceVerticle extends AbstractVerticle {
 
                 vertx.eventBus().<String>consumer("esb:oa:BasicDataService:getSubcompanyData", reply -> {
                     Single.fromCallable(() -> {
-                        final BasicDataServicePortType basicDataServicePortType = GUICE.getInstance(BasicDataServicePortType.class);
+                        final BasicDataServicePortType basicDataServicePortType = OA_INJECTOR.getInstance(BasicDataServicePortType.class);
                         return basicDataServicePortType.getSubcompanyData("");
                     }).subscribe(it -> {
                         reply.reply(it);

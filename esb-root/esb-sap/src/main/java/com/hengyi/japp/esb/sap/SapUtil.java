@@ -7,7 +7,6 @@ import com.github.ixtf.japp.core.J;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.sap.conn.jco.*;
-import lombok.SneakyThrows;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -28,8 +27,7 @@ public class SapUtil {
      * @param f
      * @param body json 文本
      */
-    @SneakyThrows
-    public static final void setParam(final JCoFunction f, final String body) {
+    public static final void setParam(final JCoFunction f, final String body) throws Exception {
         if (J.isBlank(body)) {
             return;
         }
@@ -40,8 +38,7 @@ public class SapUtil {
         setParam(f.getTableParameterList(), node.get("tables"));
     }
 
-    @SneakyThrows
-    public static final String params2String(JCoFunction f) {
+    public static final String params2String(JCoFunction f) throws Exception {
         final Map<String, Object> map = Maps.newHashMap();
         map.put("imports", toMap(f.getImportParameterList()));
         map.put("exports", toMap(f.getExportParameterList()));

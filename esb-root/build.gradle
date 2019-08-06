@@ -6,7 +6,7 @@ plugins {
 }
 allprojects {
     group 'com.hengyi.japp.esb'
-    version '1.0'
+    version '2.0'
 
     apply plugin: 'idea'
     apply plugin: 'maven'

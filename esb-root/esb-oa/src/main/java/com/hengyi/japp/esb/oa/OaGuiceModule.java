@@ -1,22 +1,16 @@
 package com.hengyi.japp.esb.oa;
 
+import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
-import com.hengyi.japp.esb.core.GuiceModule;
 import com.hengyi.japp.esb.oa.soap.BasicDataService.BasicDataService;
 import com.hengyi.japp.esb.oa.soap.BasicDataService.BasicDataServicePortType;
 import com.hengyi.japp.esb.oa.soap.HrmService.HrmService;
 import com.hengyi.japp.esb.oa.soap.HrmService.HrmServicePortType;
 import com.hengyi.japp.esb.oa.soap.WorkflowService.WorkflowService;
 import com.hengyi.japp.esb.oa.soap.WorkflowService.WorkflowServicePortType;
-import io.jaegertracing.Configuration;
-import io.jaegertracing.Configuration.ReporterConfiguration;
-import io.jaegertracing.Configuration.SamplerConfiguration;
-import io.jaegertracing.Configuration.SenderConfiguration;
-import io.opentracing.Tracer;
 import io.vertx.core.json.JsonObject;
-import io.vertx.reactivex.core.Vertx;
 import lombok.SneakyThrows;
 
 import java.net.URL;
@@ -26,11 +20,7 @@ import java.net.URL;
  *
  * @author jzb 2018-03-21
  */
-public class GuiceOaModule extends GuiceModule {
-
-    protected GuiceOaModule(Vertx vertx) {
-        super(vertx);
-    }
+public class OaGuiceModule extends AbstractModule {
 
     @SneakyThrows
     @Provides
@@ -62,15 +52,4 @@ public class GuiceOaModule extends GuiceModule {
         return hrmService.getHrmServiceHttpPort();
     }
 
-    @SneakyThrows
-    @Provides
-    @Singleton
-    private Tracer Tracer(@Named("vertxConfig") JsonObject vertxConfig) {
-        final JsonObject apm = vertxConfig.getJsonObject("apm");
-        final SamplerConfiguration samplerConfig = SamplerConfiguration.fromEnv().withType("const").withParam(1);
-        final SenderConfiguration senderConfiguration = new SenderConfiguration().withAgentHost(apm.getString("agentHost"));
-        final ReporterConfiguration reporterConfig = ReporterConfiguration.fromEnv().withSender(senderConfiguration).withLogSpans(true);
-        final Configuration config = new Configuration("esb-oa").withSampler(samplerConfig).withReporter(reporterConfig);
-        return config.getTracer();
-    }
 }

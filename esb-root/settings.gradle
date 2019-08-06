@@ -1,12 +1,10 @@
 rootProject.name = 'esb-root'
-include 'esb-agent'
 include 'esb-core'
 include 'esb-open'
 include 'esb-auth'
 include 'esb-sap'
+include 'esb-oa'
 include 'esb-sms'
-include 'esb-log'
 include 'esb-weixin'
 include 'esb-sdk'
-include 'esb-oa'
 

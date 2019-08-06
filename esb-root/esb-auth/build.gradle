@@ -1,31 +1,5 @@
-plugins {
-    id 'com.google.cloud.tools.jib' version '1.4.0'
-}
-
 dependencies {
     compile project(':esb-core')
 }
 
-jar.manifest {
-    attributes(
-            'Main-Verticle': "com.hengyi.japp.esb.auth.MainVerticle",
-    )
-}
-
-jib {
-    from {
-        image = 'openjdk:alpine'
-    }
-    to {
-        image = 'localhost:5000/my-image/built-with-jib'
-        credHelper = 'osxkeychain'
-        tags = ['tag2', 'latest']
-    }
-    container {
-        jvmFlags = ['-Xms512m', '-Xdebug', '-Xmy:flag=jib-rules']
-        mainClass = 'io.vertx.core.Launcher'
-        args = ['some', 'args']
-        ports = ['9998']
-        format = 'OCI'
-    }
-}
+mainClassName = "com.hengyi.japp.esb.auth.AuthVerticle"

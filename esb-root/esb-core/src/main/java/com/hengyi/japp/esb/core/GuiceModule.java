@@ -3,23 +3,24 @@ package com.hengyi.japp.esb.core;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
-import io.reactivex.Scheduler;
+import io.jaegertracing.Configuration;
+import io.jaegertracing.Configuration.ReporterConfiguration;
+import io.jaegertracing.Configuration.SamplerConfiguration;
+import io.jaegertracing.Configuration.SenderConfiguration;
+import io.opentracing.Tracer;
 import io.vertx.core.json.JsonObject;
-import io.vertx.reactivex.core.RxHelper;
 import io.vertx.reactivex.core.Vertx;
-import io.vertx.reactivex.core.http.HttpClient;
-import io.vertx.reactivex.ext.web.client.WebClient;
+import lombok.SneakyThrows;
 
 import javax.inject.Named;
-import java.io.IOException;
 
 /**
  * @author jzb 2018-03-21
  */
-public abstract class GuiceModule extends AbstractModule {
+public class GuiceModule extends AbstractModule {
     private final Vertx vertx;
 
-    protected GuiceModule(Vertx vertx) {
+    public GuiceModule(Vertx vertx) {
         this.vertx = vertx;
     }
 
@@ -33,28 +34,28 @@ public abstract class GuiceModule extends AbstractModule {
     @Provides
     @Singleton
     @Named("rootPath")
-    private String rootPath() {
-        return vertxConfig().getString("rootPath");
+    private String rootPath(@Named("vertxConfig") JsonObject vertxConfig) {
+        return vertxConfig.getString("rootPath");
     }
 
-    @Provides
-    private HttpClient HttpClient() {
-        return vertx.createHttpClient();
-    }
 
+    @SneakyThrows
     @Provides
-    private WebClient WebClient() {
-        return WebClient.create(vertx);
-    }
-
-    @Provides
-    private Scheduler Scheduler() {
-        return RxHelper.scheduler(vertx);
+    @Singleton
+    private Tracer Tracer(@com.google.inject.name.Named("vertxConfig") JsonObject vertxConfig) {
+        final JsonObject apm = vertxConfig.getJsonObject("apm");
+        final String serviceName = apm.getString("serviceName");
+        final String agentHost = apm.getString("agentHost");
+        final SamplerConfiguration samplerConfig = SamplerConfiguration.fromEnv().withType("const").withParam(1);
+        final SenderConfiguration senderConfiguration = new SenderConfiguration().withAgentHost(agentHost);
+        final ReporterConfiguration reporterConfig = ReporterConfiguration.fromEnv().withSender(senderConfiguration).withLogSpans(true);
+        final Configuration config = new Configuration(serviceName).withSampler(samplerConfig).withReporter(reporterConfig);
+        return config.getTracer();
     }
 
     @Provides
     @Singleton
-    private Vertx vertx() throws IOException {
+    private Vertx vertx() {
         return vertx;
     }
 }
