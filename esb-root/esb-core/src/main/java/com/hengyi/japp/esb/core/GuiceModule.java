@@ -47,7 +47,8 @@ public class GuiceModule extends AbstractModule {
         final String serviceName = apm.getString("serviceName");
         final String agentHost = apm.getString("agentHost");
         final SamplerConfiguration samplerConfig = SamplerConfiguration.fromEnv().withType("const").withParam(1);
-        final SenderConfiguration senderConfiguration = new SenderConfiguration().withAgentHost(agentHost);
+//        final SenderConfiguration senderConfiguration = new SenderConfiguration().withAgentHost(agentHost);
+        final SenderConfiguration senderConfiguration = new SenderConfiguration().withEndpoint("http://" + agentHost + ":14268/api/traces");
         final ReporterConfiguration reporterConfig = ReporterConfiguration.fromEnv().withSender(senderConfiguration).withLogSpans(true);
         final Configuration config = new Configuration(serviceName).withSampler(samplerConfig).withReporter(reporterConfig);
         return config.getTracer();

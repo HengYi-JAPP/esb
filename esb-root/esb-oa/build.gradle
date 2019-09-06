@@ -4,6 +4,7 @@ dependencies {
             files('/home/jzb/Templates/lib/oa-WorkflowService-wsimport.jar',
                     '/home/jzb/Templates/lib/oa-BasicDataService-wsimport.jar',
                     '/home/jzb/Templates/lib/oa-HrmService-wsimport.jar'),
+            "io.vertx:vertx-web-client",
             'com.sun.xml.ws:jaxws-ri:2.3.2',
             'com.sun.xml.ws:jaxws-tools:2.3.2',
             'org.apache.cxf:cxf-rt-frontend-jaxws:3.3.2',

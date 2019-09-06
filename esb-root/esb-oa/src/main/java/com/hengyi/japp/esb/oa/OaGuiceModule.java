@@ -52,4 +52,12 @@ public class OaGuiceModule extends AbstractModule {
         return hrmService.getHrmServiceHttpPort();
     }
 
+    @SneakyThrows
+    @Provides
+    @Singleton
+    @Named("restServiceConfig")
+    private JsonObject restServiceConfig(@Named("vertxConfig") JsonObject vertxConfig) {
+        return vertxConfig.getJsonObject("rest");
+    }
+
 }
