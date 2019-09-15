@@ -3,6 +3,7 @@ package com.hengyi.japp.esb.oa.verticle;
 import com.hengyi.japp.esb.oa.command.DeleteRequestCommand;
 import com.hengyi.japp.esb.oa.command.DoCreateWorkflowRequestCommand;
 import com.hengyi.japp.esb.oa.command.DoCreateWorkflowRequestCommandByYunbiao;
+import com.hengyi.japp.esb.oa.command.GetWorkflowRequestCommand;
 import com.hengyi.japp.esb.oa.soap.WorkflowService.WorkflowRequestInfo;
 import com.hengyi.japp.esb.oa.soap.WorkflowService.WorkflowServicePortType;
 import io.opentracing.Span;
@@ -26,8 +27,9 @@ public class WorkflowServiceVerticle extends AbstractVerticle {
     public Completable rxStart() {
         return Completable.mergeArray(
                 doCreateWorkflowRequest().rxCompletionHandler(),
-                deleteRequest().rxCompletionHandler(),
-                doCreateWorkflowRequestByYunbiao().rxCompletionHandler()
+                doCreateWorkflowRequestByYunbiao().rxCompletionHandler(),
+                getWorkflowRequest().rxCompletionHandler(),
+                deleteRequest().rxCompletionHandler()
         );
     }
 
@@ -41,6 +43,27 @@ public class WorkflowServiceVerticle extends AbstractVerticle {
                 final WorkflowRequestInfo workflowRequestInfo = command.createWorkflowRequestInfo();
                 final WorkflowServicePortType workflowServicePortType = OA_INJECTOR.getInstance(WorkflowServicePortType.class);
                 return workflowServicePortType.doCreateWorkflowRequest(workflowRequestInfo, command.getUserid());
+            }).subscribe(it -> {
+                apmSuccess(reply, span, it);
+                reply.reply(it);
+            }, err -> {
+                apmError(reply, span, err);
+                reply.fail(400, err.getLocalizedMessage());
+            });
+        });
+    }
+
+    private MessageConsumer<String> doCreateWorkflowRequestByYunbiao() {
+        final String address = "esb:oa:yunbiao:WorkflowService:doCreateWorkflowRequest";
+        return vertx.eventBus().consumer(address, reply -> {
+            final Tracer tracer = OA_INJECTOR.getInstance(Tracer.class);
+            final Span span = initApm(reply, tracer, this, "yunbiao:WorkflowService:doCreateWorkflowRequest", address);
+            Single.fromCallable(() -> {
+                final DoCreateWorkflowRequestCommandByYunbiao command = MAPPER.readValue(reply.body(), DoCreateWorkflowRequestCommandByYunbiao.class);
+                final WorkflowRequestInfo workflowRequestInfo = command.createWorkflowRequestInfo();
+                final WorkflowServicePortType workflowServicePortType = OA_INJECTOR.getInstance(WorkflowServicePortType.class);
+                final String data = workflowServicePortType.doCreateWorkflowRequest(workflowRequestInfo, command.getUserid());
+                return new JsonObject().put("data", data).encode();
             }).subscribe(it -> {
                 apmSuccess(reply, span, it);
                 reply.reply(it);
@@ -70,17 +93,16 @@ public class WorkflowServiceVerticle extends AbstractVerticle {
         });
     }
 
-    private MessageConsumer<String> doCreateWorkflowRequestByYunbiao() {
-        final String address = "esb:oa:yunbiao:WorkflowService:doCreateWorkflowRequest";
+    private MessageConsumer<String> getWorkflowRequest() {
+        final String address = "esb:oa:WorkflowService:getWorkflowRequest";
         return vertx.eventBus().consumer(address, reply -> {
             final Tracer tracer = OA_INJECTOR.getInstance(Tracer.class);
-            final Span span = initApm(reply, tracer, this, "yunbiao:WorkflowService:doCreateWorkflowRequest", address);
+            final Span span = initApm(reply, tracer, this, "WorkflowService:getWorkflowRequest", address);
             Single.fromCallable(() -> {
-                final DoCreateWorkflowRequestCommandByYunbiao command = MAPPER.readValue(reply.body(), DoCreateWorkflowRequestCommandByYunbiao.class);
-                final WorkflowRequestInfo workflowRequestInfo = command.createWorkflowRequestInfo();
+                final GetWorkflowRequestCommand command = MAPPER.readValue(reply.body(), GetWorkflowRequestCommand.class);
                 final WorkflowServicePortType workflowServicePortType = OA_INJECTOR.getInstance(WorkflowServicePortType.class);
-                final String data = workflowServicePortType.doCreateWorkflowRequest(workflowRequestInfo, command.getUserid());
-                return new JsonObject().put("data", data).encode();
+                final WorkflowRequestInfo workflowRequestInfo = workflowServicePortType.getWorkflowRequest(command.getRequestid(), command.getUserid(), command.getFromrequestid());
+                return new JsonObject().put("data", workflowRequestInfo).encode();
             }).subscribe(it -> {
                 apmSuccess(reply, span, it);
                 reply.reply(it);

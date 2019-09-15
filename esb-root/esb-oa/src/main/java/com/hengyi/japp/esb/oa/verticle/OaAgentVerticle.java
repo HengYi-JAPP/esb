@@ -56,6 +56,10 @@ public class OaAgentVerticle extends AbstractVerticle {
             final String address = "esb:oa:yunbiao:WorkflowService:doCreateWorkflowRequest";
             rxSend(rc, address, rc.getBodyAsString(), "yunbiao:WorkflowService:doCreateWorkflowRequest");
         });
+        router.post("/api/WorkflowService/getWorkflowRequest").produces(TEXT_CONTENT_TYPE).handler(rc -> {
+            final String address = "esb:oa:WorkflowService:getWorkflowRequest";
+            rxSend(rc, address, rc.getBodyAsString(), "WorkflowService:getWorkflowRequest");
+        });
         router.post("/api/WorkflowService/deleteRequest").produces(TEXT_CONTENT_TYPE).handler(rc -> {
             final String address = "esb:oa:WorkflowService:deleteRequest";
             rxSend(rc, address, rc.getBodyAsString(), "WorkflowService:deleteRequest");
