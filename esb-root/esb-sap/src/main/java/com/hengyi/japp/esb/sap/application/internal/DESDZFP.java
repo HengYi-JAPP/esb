@@ -1,4 +1,4 @@
-package com.hengyi.japp.esb.sap.interfaces.nnfp.internal;
+package com.hengyi.japp.esb.sap.application.internal;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;

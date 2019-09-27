@@ -8,11 +8,12 @@ import com.google.inject.name.Named;
 import com.hengyi.japp.esb.auth.application.AuthService;
 import com.hengyi.japp.esb.core.Constant;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.jwt.JWTOptions;
-import io.vertx.reactivex.ext.auth.jwt.JWTAuth;
-import org.apache.commons.io.FileUtils;
+import lombok.SneakyThrows;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.Objects;
 import java.util.stream.StreamSupport;
 
@@ -25,18 +26,19 @@ import static com.github.ixtf.japp.core.Constant.MAPPER;
  */
 @Singleton
 public class AuthServiceImpl implements AuthService {
-    private final String rootPath;
+    private final Path rootPath;
     private final JWTAuth jwtAuth;
 
     @Inject
-    private AuthServiceImpl(JWTAuth jwtAuth, @Named("rootPath") String rootPath) {
+    private AuthServiceImpl(JWTAuth jwtAuth, @Named("rootPath") Path rootPath) {
         this.jwtAuth = jwtAuth;
         this.rootPath = rootPath;
     }
 
+    @SneakyThrows
     @Override
-    public String auth(String id, String password) throws Exception {
-        final File file = FileUtils.getFile(rootPath, "users.json");
+    public String auth(String id, String password) {
+        final File file = rootPath.resolve("users.json").toFile();
         final JsonNode users = MAPPER.readTree(file);
         final boolean present = StreamSupport.stream(users.spliterator(), true)
                 .filter(it -> Objects.equals(id, it.get("id").asText()))

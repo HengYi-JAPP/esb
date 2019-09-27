@@ -9,11 +9,12 @@ import com.hengyi.japp.esb.oa.soap.WorkflowService.WorkflowRequestInfo;
 import com.hengyi.japp.esb.oa.soap.WorkflowService.WorkflowServicePortType;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
-import io.reactivex.Completable;
-import io.reactivex.Single;
+import io.vertx.core.AbstractVerticle;
+import io.vertx.core.CompositeFuture;
+import io.vertx.core.Future;
+import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
-import io.vertx.reactivex.core.AbstractVerticle;
-import io.vertx.reactivex.core.eventbus.MessageConsumer;
+import reactor.core.publisher.Mono;
 
 import static com.github.ixtf.japp.core.Constant.MAPPER;
 import static com.hengyi.japp.esb.core.Util.*;
@@ -25,13 +26,13 @@ import static com.hengyi.japp.esb.oa.OaVerticle.OA_INJECTOR;
 public class WorkflowServiceVerticle extends AbstractVerticle {
 
     @Override
-    public Completable rxStart() {
-        return Completable.mergeArray(
-                doCreateWorkflowRequest().rxCompletionHandler(),
-                doCreateWorkflowRequestByYunbiao().rxCompletionHandler(),
-                getWorkflowRequest().rxCompletionHandler(),
-                deleteRequest().rxCompletionHandler()
-        );
+    public void start(Future<Void> startFuture) throws Exception {
+        CompositeFuture.all(
+                Future.<Void>future(promise -> doCreateWorkflowRequestByYunbiao().completionHandler(promise)),
+                Future.<Void>future(promise -> doCreateWorkflowRequest().completionHandler(promise)),
+                Future.<Void>future(promise -> getWorkflowRequest().completionHandler(promise)),
+                Future.<Void>future(promise -> deleteRequest().completionHandler(promise))
+        ).<Void>mapEmpty().setHandler(startFuture);
     }
 
     private MessageConsumer<String> doCreateWorkflowRequest() {
@@ -39,7 +40,7 @@ public class WorkflowServiceVerticle extends AbstractVerticle {
         return vertx.eventBus().consumer(address, reply -> {
             final Tracer tracer = OA_INJECTOR.getInstance(Tracer.class);
             final Span span = initApm(reply, tracer, this, "WorkflowService:doCreateWorkflowRequest", address);
-            Single.fromCallable(() -> {
+            Mono.fromCallable(() -> {
                 final DoCreateWorkflowRequestCommand command = MAPPER.readValue(reply.body(), DoCreateWorkflowRequestCommand.class);
                 final WorkflowRequestInfo workflowRequestInfo = command.createWorkflowRequestInfo();
                 final WorkflowServicePortType workflowServicePortType = OA_INJECTOR.getInstance(WorkflowServicePortType.class);
@@ -59,7 +60,7 @@ public class WorkflowServiceVerticle extends AbstractVerticle {
         return vertx.eventBus().consumer(address, reply -> {
             final Tracer tracer = OA_INJECTOR.getInstance(Tracer.class);
             final Span span = initApm(reply, tracer, this, "yunbiao:WorkflowService:doCreateWorkflowRequest", address);
-            Single.fromCallable(() -> {
+            Mono.fromCallable(() -> {
                 final DoCreateWorkflowRequestCommandByYunbiao command = MAPPER.readValue(reply.body(), DoCreateWorkflowRequestCommandByYunbiao.class);
                 final WorkflowRequestInfo workflowRequestInfo = command.createWorkflowRequestInfo();
                 final WorkflowServicePortType workflowServicePortType = OA_INJECTOR.getInstance(WorkflowServicePortType.class);
@@ -80,7 +81,7 @@ public class WorkflowServiceVerticle extends AbstractVerticle {
         return vertx.eventBus().consumer(address, reply -> {
             final Tracer tracer = OA_INJECTOR.getInstance(Tracer.class);
             final Span span = initApm(reply, tracer, this, "WorkflowService:deleteRequest", address);
-            Single.fromCallable(() -> {
+            Mono.fromCallable(() -> {
                 final DeleteRequestCommand command = MAPPER.readValue(reply.body(), DeleteRequestCommand.class);
                 final WorkflowServicePortType workflowServicePortType = OA_INJECTOR.getInstance(WorkflowServicePortType.class);
                 return workflowServicePortType.deleteRequest(command.getRequestid(), command.getUserid());
@@ -99,7 +100,7 @@ public class WorkflowServiceVerticle extends AbstractVerticle {
         return vertx.eventBus().consumer(address, reply -> {
             final Tracer tracer = OA_INJECTOR.getInstance(Tracer.class);
             final Span span = initApm(reply, tracer, this, "WorkflowService:getWorkflowRequest", address);
-            Single.fromCallable(() -> {
+            Mono.fromCallable(() -> {
                 final GetWorkflowRequestCommand command = MAPPER.readValue(reply.body(), GetWorkflowRequestCommand.class);
                 final WorkflowServicePortType workflowServicePortType = OA_INJECTOR.getInstance(WorkflowServicePortType.class);
                 final WorkflowRequestInfo workflowRequestInfo = workflowServicePortType.getWorkflowRequest(command.getRequestid(), command.getUserid(), command.getFromrequestid());

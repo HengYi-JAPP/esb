@@ -3,15 +3,11 @@ package com.hengyi.japp.esb.oa;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.hengyi.japp.esb.core.GuiceModule;
-import com.hengyi.japp.esb.core.MainVerticle;
 import com.hengyi.japp.esb.oa.verticle.BasicDataServiceVerticle;
 import com.hengyi.japp.esb.oa.verticle.HrmServiceVerticle;
 import com.hengyi.japp.esb.oa.verticle.OaAgentVerticle;
 import com.hengyi.japp.esb.oa.verticle.WorkflowServiceVerticle;
-import io.reactivex.Completable;
-import io.reactivex.Single;
-import io.vertx.core.DeploymentOptions;
-import io.vertx.reactivex.core.Vertx;
+import io.vertx.core.*;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.TimeUnit;
@@ -20,62 +16,74 @@ import java.util.concurrent.TimeUnit;
  * @author jzb 2019-08-01
  */
 @Slf4j
-public class OaVerticle extends MainVerticle {
+public class OaVerticle extends AbstractVerticle {
+    public static String OA_MODULE = "esb-oa";
     public static Injector OA_INJECTOR;
 
     public static void main(String[] args) {
-        Single.fromCallable(() -> deploymentOptions("/home/esb/esb-oa")).flatMap(deploymentOptions -> {
-            final Vertx vertx = vertx();
-            OA_INJECTOR = Guice.createInjector(new GuiceModule(vertx), new OaGuiceModule());
-            return vertx.rxDeployVerticle(OaVerticle.class.getName(), deploymentOptions);
-        }).subscribe(
-                it -> log.info("===Esb Oa[" + it + "] 启动成功==="),
-                err -> log.error("===Esb Oa 启动失败===", err)
-        );
+        final VertxOptions vertxOptions = new VertxOptions()
+                .setWorkerPoolSize(1000)
+                .setMaxWorkerExecuteTime(1)
+                .setMaxWorkerExecuteTimeUnit(TimeUnit.DAYS)
+                .setMaxEventLoopExecuteTime(1)
+                .setMaxEventLoopExecuteTimeUnit(TimeUnit.MINUTES);
+        final Vertx vertx = Vertx.vertx(vertxOptions);
+        OA_INJECTOR = Guice.createInjector(new GuiceModule(vertx, OA_MODULE), new OaGuiceModule());
+
+        final DeploymentOptions deploymentOptions = new DeploymentOptions();
+        vertx.deployVerticle(OaVerticle.class, deploymentOptions, ar -> {
+            if (ar.succeeded()) {
+                log.info("===Esb Oa[" + ar.result() + "] 启动成功===");
+            } else {
+                log.error("===Esb Oa 启动失败===", ar.cause());
+            }
+        });
     }
 
     @Override
-    public Completable rxStart() {
-        return Completable.mergeArray(
-                deployOaAgent().ignoreElement(),
-                deployWorkflowService().ignoreElement(),
-                deployBasicDataService().ignoreElement()
-//                deployHrmServiceVerticle().ignoreElement()
-        );
+    public void start(Future<Void> startFuture) throws Exception {
+        final CompositeFuture deployWorker = CompositeFuture.all(deployWorkflowService(), deployBasicDataService(), deployHrmService());
+        deployWorker.compose(f -> deployAgent()).<Void>mapEmpty().setHandler(startFuture);
     }
 
-    private Single<String> deployOaAgent() {
-        final DeploymentOptions deploymentOptions = new DeploymentOptions().setConfig(config()).setInstances(20);
-        return vertx.rxDeployVerticle(OaAgentVerticle.class.getName(), deploymentOptions);
+    private Future<String> deployAgent() {
+        return Future.future(promise -> {
+            final DeploymentOptions deploymentOptions = new DeploymentOptions().setConfig(config()).setInstances(20);
+            vertx.deployVerticle(OaAgentVerticle.class, deploymentOptions, promise);
+        });
     }
 
-    private Single<String> deployWorkflowService() {
-        final DeploymentOptions deploymentOptions = new DeploymentOptions()
-                .setConfig(config())
-                .setWorker(true)
-                .setMaxWorkerExecuteTime(1)
-                .setMaxWorkerExecuteTimeUnit(TimeUnit.DAYS)
-                .setInstances(1000);
-        return vertx.rxDeployVerticle(WorkflowServiceVerticle.class.getName(), deploymentOptions);
+    private Future<String> deployWorkflowService() {
+        return Future.future(promise -> {
+            final DeploymentOptions deploymentOptions = new DeploymentOptions()
+                    .setWorker(true)
+                    .setInstances(1000)
+                    .setMaxWorkerExecuteTime(1)
+                    .setMaxWorkerExecuteTimeUnit(TimeUnit.DAYS);
+            vertx.deployVerticle(WorkflowServiceVerticle.class, deploymentOptions, promise);
+        });
     }
 
-    private Single<String> deployBasicDataService() {
-        final DeploymentOptions deploymentOptions = new DeploymentOptions()
-                .setConfig(config())
-                .setWorker(true)
-                .setMaxWorkerExecuteTime(1)
-                .setMaxWorkerExecuteTimeUnit(TimeUnit.DAYS)
-                .setInstances(1000);
-        return vertx.rxDeployVerticle(BasicDataServiceVerticle.class.getName(), deploymentOptions);
+    private Future<String> deployBasicDataService() {
+        return Future.future(promise -> {
+            final DeploymentOptions deploymentOptions = new DeploymentOptions()
+                    .setWorker(true)
+                    .setInstances(1000)
+                    .setMaxWorkerExecuteTime(1)
+                    .setMaxWorkerExecuteTimeUnit(TimeUnit.DAYS);
+            vertx.deployVerticle(BasicDataServiceVerticle.class, deploymentOptions, promise);
+        });
     }
 
-    private Single<String> deployHrmServiceVerticle() {
-        final DeploymentOptions deploymentOptions = new DeploymentOptions()
-                .setConfig(config())
-                .setWorker(true)
-                .setMaxWorkerExecuteTime(1)
-                .setMaxWorkerExecuteTimeUnit(TimeUnit.DAYS)
-                .setInstances(1000);
-        return vertx.rxDeployVerticle(HrmServiceVerticle.class.getName(), deploymentOptions);
+    private Future<String> deployHrmService() {
+        return Future.future(promise -> {
+            final DeploymentOptions deploymentOptions = new DeploymentOptions()
+                    .setWorker(true)
+                    .setInstances(1000)
+                    .setMaxWorkerExecuteTime(1)
+                    .setMaxWorkerExecuteTimeUnit(TimeUnit.DAYS);
+            vertx.deployVerticle(HrmServiceVerticle.class, deploymentOptions, promise);
+        });
     }
+
 }

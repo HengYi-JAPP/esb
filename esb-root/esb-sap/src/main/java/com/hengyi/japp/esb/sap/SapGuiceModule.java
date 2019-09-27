@@ -1,8 +1,16 @@
 package com.hengyi.japp.esb.sap;
 
 import com.google.inject.AbstractModule;
-import com.hengyi.japp.esb.sap.interfaces.nnfp.NnfpService;
-import com.hengyi.japp.esb.sap.interfaces.nnfp.internal.NnfpServiceImpl;
+import com.google.inject.Provides;
+import com.google.inject.Singleton;
+import lombok.Cleanup;
+import lombok.SneakyThrows;
+
+import javax.inject.Named;
+import java.io.File;
+import java.io.FileReader;
+import java.nio.file.Path;
+import java.util.Properties;
 
 /**
  * 描述：
@@ -11,24 +19,16 @@ import com.hengyi.japp.esb.sap.interfaces.nnfp.internal.NnfpServiceImpl;
  */
 public class SapGuiceModule extends AbstractModule {
 
-    @Override
-    protected void configure() {
-        bind(NnfpService.class).to(NnfpServiceImpl.class);
+    @SneakyThrows
+    @Provides
+    @Singleton
+    @Named("sap.properties")
+    private Properties SapProperties(@Named("rootPath") Path rootPath) {
+        final File file = rootPath.resolve("sap.properties").toFile();
+        @Cleanup final FileReader reader = new FileReader(file);
+        final Properties properties = new Properties();
+        properties.load(reader);
+        return properties;
     }
-
-//    @Provides
-//    private HttpClient HttpClient() {
-//        return vertx.createHttpClient();
-//    }
-//
-//    @Provides
-//    private WebClient WebClient() {
-//        return WebClient.create(vertx);
-//    }
-//
-//    @Provides
-//    private Scheduler Scheduler() {
-//        return RxHelper.scheduler(vertx);
-//    }
 
 }

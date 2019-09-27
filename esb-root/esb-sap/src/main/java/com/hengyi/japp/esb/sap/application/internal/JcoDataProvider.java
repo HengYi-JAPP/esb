@@ -1,15 +1,15 @@
 package com.hengyi.japp.esb.sap.application.internal;
 
+import com.google.inject.Key;
+import com.google.inject.name.Named;
+import com.google.inject.name.Names;
 import com.sap.conn.jco.ext.*;
-import lombok.Cleanup;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
 
-import java.io.File;
-import java.io.FileReader;
 import java.util.Collections;
 import java.util.Properties;
+
+import static com.hengyi.japp.esb.sap.SapVerticle.SAP_INJECTOR;
 
 /**
  * 描述： SAP JCO 连接数据配置
@@ -32,15 +32,13 @@ public class JcoDataProvider implements DestinationDataProvider, ServerDataProvi
                 .forEach(k -> System.out.println("===" + k + "=" + properties.get(k) + "==="));
     }
 
-    @SneakyThrows
-    synchronized public static void init(String dir) {
+    synchronized public static void init() {
         if (Environment.isDestinationDataProviderRegistered()) {
             return;
         }
-        final File file = FileUtils.getFile(dir, "sap.properties");
-        @Cleanup final FileReader reader = new FileReader(file);
-        final Properties properties = new Properties();
-        properties.load(reader);
+        final Named named = Names.named("sap.properties");
+        final Key<Properties> key = Key.get(Properties.class, named);
+        final Properties properties = SAP_INJECTOR.getInstance(key);
         new JcoDataProvider(properties);
     }
 

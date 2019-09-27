@@ -26,7 +26,7 @@ import java.util.Properties;
 public class GuiceWeixinModule extends GuiceModule {
 
     protected GuiceWeixinModule(Vertx vertx) {
-        super(vertx);
+        super(vertx, module);
     }
 
     @Override

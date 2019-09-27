@@ -1,14 +1,17 @@
 package com.hengyi.japp.esb.open.application;
 
-import io.vertx.reactivex.core.Vertx;
-import io.vertx.reactivex.ext.web.Router;
-import io.vertx.reactivex.ext.web.RoutingContext;
+import com.google.inject.ImplementedBy;
+import com.hengyi.japp.esb.open.application.internal.TexbeedataServiceImpl;
+import io.vertx.core.Vertx;
+import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
 
 /**
  * 描述：
  *
  * @author jzb 2018-04-11
  */
+@ImplementedBy(TexbeedataServiceImpl.class)
 public interface TexbeedataService {
     default Router router(Vertx vertx) {
         final Router router = Router.router(vertx);

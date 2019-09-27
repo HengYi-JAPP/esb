@@ -1,5 +1,8 @@
 dependencies {
-    compile project(':esb-core')
+    compile project(':esb-core'),
+            "io.vertx:vertx-web-client",
+            "org.pac4j:vertx-pac4j:4.1.1",
+            "org.pac4j:pac4j-cas:3.8.1"
 }
 
 mainClassName = "com.hengyi.japp.esb.open.OpenVerticle"

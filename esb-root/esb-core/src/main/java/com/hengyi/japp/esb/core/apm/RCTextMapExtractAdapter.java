@@ -1,7 +1,7 @@
 package com.hengyi.japp.esb.core.apm;
 
 import io.opentracing.propagation.TextMap;
-import io.vertx.reactivex.core.eventbus.Message;
+import io.vertx.core.eventbus.Message;
 
 import java.util.Iterator;
 import java.util.Map;

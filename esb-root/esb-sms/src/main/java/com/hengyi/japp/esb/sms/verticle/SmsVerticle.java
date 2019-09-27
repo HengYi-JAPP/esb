@@ -1,7 +1,6 @@
 package com.hengyi.japp.esb.sms.verticle;
 
 import com.hengyi.japp.esb.core.Util;
-import com.hengyi.japp.esb.core.verticle.BaseRestAPIVerticle;
 import com.hengyi.japp.esb.sms.application.SchedulerSend1818;
 import com.hengyi.japp.esb.sms.application.SmsService;
 import io.vertx.core.Future;

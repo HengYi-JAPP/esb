@@ -3,16 +3,10 @@ package com.hengyi.japp.esb.sap;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.hengyi.japp.esb.core.GuiceModule;
-import com.hengyi.japp.esb.core.MainVerticle;
 import com.hengyi.japp.esb.sap.application.internal.JcoDataProvider;
 import com.hengyi.japp.esb.sap.verticle.JavaCallSapAgentVerticle;
 import com.hengyi.japp.esb.sap.verticle.JavaCallSapWorkerVerticle;
-import com.hengyi.japp.esb.sap.verticle.SapCallJavaAgentVerticle;
-import com.hengyi.japp.esb.sap.verticle.SapCallJavaWorkerVerticle;
-import io.reactivex.Completable;
-import io.reactivex.Single;
-import io.vertx.core.DeploymentOptions;
-import io.vertx.reactivex.core.Vertx;
+import io.vertx.core.*;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.TimeUnit;
@@ -21,61 +15,70 @@ import java.util.concurrent.TimeUnit;
  * @author jzb 2018-03-18
  */
 @Slf4j
-public class SapVerticle extends MainVerticle {
+public class SapVerticle extends AbstractVerticle {
+    public static String SAP_MODULE = "esb-sap";
     public static Injector SAP_INJECTOR;
 
     public static void main(String[] args) {
-        JcoDataProvider.init("/home/esb/esb-sap");
-        Single.fromCallable(() -> deploymentOptions("/home/esb/esb-sap")).flatMap(deploymentOptions -> {
-            final Vertx vertx = vertx();
-            SAP_INJECTOR = Guice.createInjector(new GuiceModule(vertx), new SapGuiceModule());
-            return vertx.rxDeployVerticle(SapVerticle.class.getName(), deploymentOptions);
-        }).subscribe(
-                it -> log.info("===Esb Sap[" + it + "] 启动成功==="),
-                err -> log.error("===Esb Sap 启动失败===", err)
-        );
+        final VertxOptions vertxOptions = new VertxOptions()
+                .setWorkerPoolSize(10_000)
+                .setMaxWorkerExecuteTime(1)
+                .setMaxWorkerExecuteTimeUnit(TimeUnit.DAYS)
+                .setMaxEventLoopExecuteTime(1)
+                .setMaxEventLoopExecuteTimeUnit(TimeUnit.MINUTES);
+        final Vertx vertx = Vertx.vertx(vertxOptions);
+        SAP_INJECTOR = Guice.createInjector(new GuiceModule(vertx, SAP_MODULE), new SapGuiceModule());
+        JcoDataProvider.init();
+
+        final DeploymentOptions deploymentOptions = new DeploymentOptions();
+        vertx.deployVerticle(SapVerticle.class, deploymentOptions, ar -> {
+            if (ar.succeeded()) {
+                log.info("===Esb Sap[" + ar.result() + "] 启动成功===");
+            } else {
+                log.error("===Esb Sap 启动失败===", ar.cause());
+            }
+        });
     }
 
     @Override
-    public Completable rxStart() {
-        return Completable.mergeArray(
-                deployJavaCallSapAgent().ignoreElement(),
-                deployJavaCallSapWorker().ignoreElement()
-//                deploySapCallJavaAgent().ignoreElement(),
-//                deploySapCallJavaWorker().ignoreElement()
-        );
+    public void start(Future<Void> startFuture) throws Exception {
+        deployJavaCallSapWorker().compose(f -> deployJavaCallSapAgent()).<Void>mapEmpty().setHandler(startFuture);
     }
 
-    private Single<String> deployJavaCallSapAgent() {
-        final DeploymentOptions deploymentOptions = new DeploymentOptions().setConfig(config()).setInstances(20);
-        return vertx.rxDeployVerticle(JavaCallSapAgentVerticle.class.getName(), deploymentOptions);
+    private Future<String> deployJavaCallSapAgent() {
+        return Future.future(promise -> {
+            final DeploymentOptions deploymentOptions = new DeploymentOptions().setInstances(20);
+            vertx.deployVerticle(JavaCallSapAgentVerticle.class, deploymentOptions, promise);
+        });
     }
 
-    private Single<String> deployJavaCallSapWorker() {
-        final DeploymentOptions deploymentOptions = new DeploymentOptions()
-                .setConfig(config())
-                .setWorker(true)
-                .setWorkerPoolName(JavaCallSapWorkerVerticle.class.getSimpleName())
-                .setWorkerPoolSize(100_000)
-                .setInstances(100_000)
-                .setMaxWorkerExecuteTime(1)
-                .setMaxWorkerExecuteTimeUnit(TimeUnit.DAYS);
-        return vertx.rxDeployVerticle(JavaCallSapWorkerVerticle.class.getName(), deploymentOptions);
+    private Future<String> deployJavaCallSapWorker() {
+        return Future.future(promise -> {
+            final DeploymentOptions deploymentOptions = new DeploymentOptions()
+                    .setConfig(config())
+                    .setWorker(true)
+//                    .setWorkerPoolName(JavaCallSapWorkerVerticle.class.getSimpleName())
+//                    .setWorkerPoolSize(100_000)
+                    .setInstances(10_000)
+                    .setMaxWorkerExecuteTime(1)
+                    .setMaxWorkerExecuteTimeUnit(TimeUnit.DAYS);
+            vertx.deployVerticle(JavaCallSapWorkerVerticle.class, deploymentOptions, promise);
+        });
     }
 
-    private Single<String> deploySapCallJavaAgent() {
-        final DeploymentOptions deploymentOptions = new DeploymentOptions().setConfig(config());
-        return vertx.rxDeployVerticle(SapCallJavaAgentVerticle.class.getName(), deploymentOptions);
-    }
-
-    private Single<String> deploySapCallJavaWorker() {
-        final DeploymentOptions deploymentOptions = new DeploymentOptions()
-                .setConfig(config())
-                .setWorker(true)
-                .setMaxWorkerExecuteTime(1)
-                .setMaxWorkerExecuteTimeUnit(TimeUnit.DAYS)
-                .setInstances(1000);
-        return vertx.rxDeployVerticle(SapCallJavaWorkerVerticle.class.getName(), deploymentOptions);
-    }
+//    private Single<String> deploySapCallJavaAgent() {
+//        final DeploymentOptions deploymentOptions = new DeploymentOptions().setConfig(config());
+//        return vertx.rxDeployVerticle(SapCallJavaAgentVerticle.class.getName(), deploymentOptions);
+//    }
+//
+//    private Single<String> deploySapCallJavaWorker() {
+//        final DeploymentOptions deploymentOptions = new DeploymentOptions()
+//                .setConfig(config())
+//                .setWorker(true)
+//                .setMaxWorkerExecuteTime(1)
+//                .setMaxWorkerExecuteTimeUnit(TimeUnit.DAYS)
+//                .setInstances(1000);
+//        return vertx.rxDeployVerticle(SapCallJavaWorkerVerticle.class.getName(), deploymentOptions);
+//    }
 
 }

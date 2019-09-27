@@ -3,13 +3,8 @@ package com.hengyi.japp.esb.open;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.hengyi.japp.esb.core.GuiceModule;
-import com.hengyi.japp.esb.core.MainVerticle;
 import com.hengyi.japp.esb.open.verticle.OpenAgentVerticle;
-import com.hengyi.japp.esb.open.verticle.TalentServiceVerticle;
-import io.reactivex.Completable;
-import io.reactivex.Single;
-import io.vertx.core.DeploymentOptions;
-import io.vertx.reactivex.core.Vertx;
+import io.vertx.core.*;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.TimeUnit;
@@ -18,42 +13,50 @@ import java.util.concurrent.TimeUnit;
  * @author jzb 2018-03-18
  */
 @Slf4j
-public class OpenVerticle extends MainVerticle {
+public class OpenVerticle extends AbstractVerticle {
+    public static String OPEN_MODULE = "esb-open";
     public static Injector OPEN_INJECTOR;
 
     public static void main(String[] args) {
-        Single.fromCallable(() -> deploymentOptions("/home/esb/esb-open")).flatMap(deploymentOptions -> {
-            final Vertx vertx = vertx();
-            OPEN_INJECTOR = Guice.createInjector(new GuiceModule(vertx), new OpenGuiceModule());
-            return vertx.rxDeployVerticle(OpenVerticle.class.getName(), deploymentOptions);
-        }).subscribe(
-                it -> log.info("===Esb Open[" + it + "] 启动成功==="),
-                err -> log.error("===Esb Open 启动失败===", err)
-        );
+        final VertxOptions vertxOptions = new VertxOptions()
+                .setMaxWorkerExecuteTime(1)
+                .setMaxWorkerExecuteTimeUnit(TimeUnit.DAYS)
+                .setMaxEventLoopExecuteTime(1)
+                .setMaxEventLoopExecuteTimeUnit(TimeUnit.MINUTES);
+        final Vertx vertx = Vertx.vertx(vertxOptions);
+        OPEN_INJECTOR = Guice.createInjector(new GuiceModule(vertx, OPEN_MODULE), new OpenGuiceModule());
+
+        final DeploymentOptions deploymentOptions = new DeploymentOptions();
+        vertx.deployVerticle(OpenVerticle.class, deploymentOptions, ar -> {
+            if (ar.succeeded()) {
+                log.info("===Esb Open[" + ar.result() + "] 启动成功===");
+            } else {
+                log.error("===Esb Open 启动失败===", ar.cause());
+            }
+        });
     }
 
     @Override
-    public Completable rxStart() {
-        return Completable.mergeArray(
-                deployOpenAgent().ignoreElement(),
-                deployTalentService().ignoreElement()
-        );
+    public void start(Future<Void> startFuture) throws Exception {
+        deployAgent().<Void>mapEmpty().setHandler(startFuture);
     }
 
-    private Single<String> deployOpenAgent() {
-        final DeploymentOptions deploymentOptions = new DeploymentOptions().setConfig(config()).setInstances(20);
-        return vertx.rxDeployVerticle(OpenAgentVerticle.class.getName(), deploymentOptions);
+    private Future<String> deployAgent() {
+        return Future.future(promise -> {
+            final DeploymentOptions deploymentOptions = new DeploymentOptions().setInstances(20);
+            vertx.deployVerticle(OpenAgentVerticle.class, deploymentOptions, promise);
+        });
     }
 
-    private Single<String> deployTalentService() {
-        final DeploymentOptions deploymentOptions = new DeploymentOptions()
-                .setConfig(config())
-                .setWorker(true)
-                .setMaxWorkerExecuteTime(1)
-                .setMaxWorkerExecuteTimeUnit(TimeUnit.DAYS)
-                .setInstances(1000);
-        return vertx.rxDeployVerticle(TalentServiceVerticle.class.getName(), deploymentOptions);
-    }
+//    private Single<String> deployTalentService() {
+//        final DeploymentOptions deploymentOptions = new DeploymentOptions()
+//                .setConfig(config())
+//                .setWorker(true)
+//                .setMaxWorkerExecuteTime(1)
+//                .setMaxWorkerExecuteTimeUnit(TimeUnit.DAYS)
+//                .setInstances(1000);
+//        return vertx.rxDeployVerticle(TalentServiceVerticle.class.getName(), deploymentOptions);
+//    }
 
 //    @Override
 //    public void start() throws Exception {

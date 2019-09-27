@@ -3,19 +3,15 @@ dependencies {
             "com.google.inject:guice",
             "io.vertx:vertx-web",
             "io.vertx:vertx-auth-jwt",
-            "io.vertx:vertx-rx-java2",
-            "io.vertx:vertx-service-discovery",
-            "io.vertx:vertx-circuit-breaker",
-            "io.vertx:vertx-service-proxy",
-
-            "org.pac4j:vertx-pac4j:4.1.0",
-            "org.pac4j:pac4j-cas:3.7.0",
-
-            "io.vertx:vertx-dropwizard-metrics",
+            "io.projectreactor:reactor-core",
             'io.jaegertracing:jaeger-client:1.0.0',
-
             "io.vertx:vertx-hazelcast",
             "io.vertx:vertx-health-check"
+//            "io.vertx:vertx-service-discovery",
+//            "io.vertx:vertx-circuit-breaker",
+//            "io.vertx:vertx-service-proxy",
+//            "io.vertx:vertx-dropwizard-metrics",
+
 
     compileOnly "org.jetbrains.xodus:xodus-openAPI:${xodusVersion}",
             "io.vertx:vertx-web-client"

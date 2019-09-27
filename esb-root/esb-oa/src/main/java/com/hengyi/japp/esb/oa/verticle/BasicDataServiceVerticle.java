@@ -3,11 +3,12 @@ package com.hengyi.japp.esb.oa.verticle;
 import com.hengyi.japp.esb.oa.soap.BasicDataService.BasicDataServicePortType;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
-import io.reactivex.Completable;
-import io.reactivex.Single;
-import io.vertx.reactivex.core.AbstractVerticle;
-import io.vertx.reactivex.core.eventbus.MessageConsumer;
+import io.vertx.core.AbstractVerticle;
+import io.vertx.core.CompositeFuture;
+import io.vertx.core.Future;
+import io.vertx.core.eventbus.MessageConsumer;
 import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Mono;
 
 import static com.hengyi.japp.esb.core.Util.*;
 import static com.hengyi.japp.esb.oa.OaVerticle.OA_INJECTOR;
@@ -19,12 +20,12 @@ import static com.hengyi.japp.esb.oa.OaVerticle.OA_INJECTOR;
 public class BasicDataServiceVerticle extends AbstractVerticle {
 
     @Override
-    public Completable rxStart() {
-        return Completable.mergeArray(
-                getHrmresourceData().rxCompletionHandler(),
-                getDepartmentData().rxCompletionHandler(),
-                getSubcompanyData().rxCompletionHandler()
-        );
+    public void start(Future<Void> startFuture) throws Exception {
+        CompositeFuture.all(
+                Future.<Void>future(promise -> getSubcompanyData().completionHandler(promise)),
+                Future.<Void>future(promise -> getDepartmentData().completionHandler(promise)),
+                Future.<Void>future(promise -> getSubcompanyData().completionHandler(promise))
+        ).<Void>mapEmpty().setHandler(startFuture);
     }
 
     private MessageConsumer<String> getSubcompanyData() {
@@ -32,7 +33,7 @@ public class BasicDataServiceVerticle extends AbstractVerticle {
         return vertx.eventBus().<String>consumer(address, reply -> {
             final Tracer tracer = OA_INJECTOR.getInstance(Tracer.class);
             final Span span = initApm(reply, tracer, this, "BasicDataService:getSubcompanyData", address);
-            Single.fromCallable(() -> {
+            Mono.fromCallable(() -> {
                 final BasicDataServicePortType basicDataServicePortType = OA_INJECTOR.getInstance(BasicDataServicePortType.class);
                 return basicDataServicePortType.getSubcompanyData("");
             }).subscribe(it -> {
@@ -50,7 +51,7 @@ public class BasicDataServiceVerticle extends AbstractVerticle {
         return vertx.eventBus().<String>consumer(address, reply -> {
             final Tracer tracer = OA_INJECTOR.getInstance(Tracer.class);
             final Span span = initApm(reply, tracer, this, "BasicDataService:getDepartmentData", address);
-            Single.fromCallable(() -> {
+            Mono.fromCallable(() -> {
                 final BasicDataServicePortType basicDataServicePortType = OA_INJECTOR.getInstance(BasicDataServicePortType.class);
                 return basicDataServicePortType.getDepartmentData("");
             }).subscribe(it -> {
@@ -68,7 +69,7 @@ public class BasicDataServiceVerticle extends AbstractVerticle {
         return vertx.eventBus().<String>consumer(address, reply -> {
             final Tracer tracer = OA_INJECTOR.getInstance(Tracer.class);
             final Span span = initApm(reply, tracer, this, "BasicDataService:getHrmresourceData", address);
-            Single.fromCallable(() -> {
+            Mono.fromCallable(() -> {
                 final BasicDataServicePortType basicDataServicePortType = OA_INJECTOR.getInstance(BasicDataServicePortType.class);
                 return basicDataServicePortType.getHrmresourceData("");
             }).subscribe(it -> {

@@ -2,29 +2,30 @@ package com.hengyi.japp.esb.open.verticle;
 
 import com.github.ixtf.japp.core.J;
 import com.hengyi.japp.esb.core.Util;
-import io.opentracing.Span;
-import io.opentracing.Tracer;
-import io.reactivex.Completable;
-import io.vertx.core.eventbus.DeliveryOptions;
+import com.hengyi.japp.esb.open.application.TalentService;
+import io.vertx.core.AbstractVerticle;
+import io.vertx.core.Future;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerOptions;
-import io.vertx.reactivex.core.AbstractVerticle;
-import io.vertx.reactivex.ext.auth.jwt.JWTAuth;
-import io.vertx.reactivex.ext.web.Router;
-import io.vertx.reactivex.ext.web.RoutingContext;
-import io.vertx.reactivex.ext.web.handler.BodyHandler;
-import io.vertx.reactivex.ext.web.handler.JWTAuthHandler;
-import io.vertx.reactivex.ext.web.handler.ResponseContentTypeHandler;
+import io.vertx.ext.auth.jwt.JWTAuth;
+import io.vertx.ext.web.Router;
+import io.vertx.ext.web.handler.*;
+import io.vertx.ext.web.sstore.LocalSessionStore;
 import org.apache.commons.io.FilenameUtils;
+import org.pac4j.core.config.Config;
+import org.pac4j.core.context.session.SessionStore;
+import org.pac4j.vertx.auth.Pac4jAuthProvider;
+import org.pac4j.vertx.handler.impl.CallbackHandler;
+import org.pac4j.vertx.handler.impl.CallbackHandlerOptions;
+import org.pac4j.vertx.handler.impl.SecurityHandler;
+import org.pac4j.vertx.handler.impl.SecurityHandlerOptions;
 
 import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.Duration;
 import java.util.Optional;
 
-import static com.hengyi.japp.esb.core.Util.*;
 import static com.hengyi.japp.esb.open.OpenVerticle.OPEN_INJECTOR;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -32,15 +33,57 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @author jzb 2019-09-19
  */
 public class OpenAgentVerticle extends AbstractVerticle {
+    private final LocalSessionStore localSessionStore = OPEN_INJECTOR.getInstance(LocalSessionStore.class);
+    private final Pac4jAuthProvider pac4jAuthProvider = OPEN_INJECTOR.getInstance(Pac4jAuthProvider.class);
+    private final SessionStore pac4jSessionStore = OPEN_INJECTOR.getInstance(SessionStore.class);
+    private final Config pac4jConfig = OPEN_INJECTOR.getInstance(Config.class);
+
     @Override
-    public Completable rxStart() {
+    public void start(Future<Void> startFuture) throws Exception {
         final Router router = Router.router(vertx);
         router.route().handler(BodyHandler.create());
         router.route().handler(ResponseContentTypeHandler.create());
-        final JWTAuth jwtAuth = Util.createJwtAuth(vertx);
-        router.route("/api/*").handler(JWTAuthHandler.create(jwtAuth));
+
+        router.route().handler(SessionHandler.create(localSessionStore));
+        router.route().handler(UserSessionHandler.create(pac4jAuthProvider));
+        final CallbackHandlerOptions callbackHandlerOptions = new CallbackHandlerOptions().setMultiProfile(true);
+        final CallbackHandler callbackHandler = new CallbackHandler(vertx, pac4jSessionStore, pac4jConfig, callbackHandlerOptions);
+        router.get("/callback").handler(callbackHandler);
+        router.post("/callback").handler(BodyHandler.create().setMergeFormAttributes(true));
+        router.post("/callback").handler(callbackHandler);
+        router.route("/autoLogin/*").handler(securityHandler("CasClient"));
 
         // 无token api
+        downloads_scm_annex(router);
+
+        router.route("/autoLogin/talent").handler(rc -> {
+            final TalentService talentService = OPEN_INJECTOR.getInstance(TalentService.class);
+            talentService.autoLoginUrl(rc.user()).setHandler(ar -> {
+                if (ar.succeeded()) {
+                    rc.response().putHeader(HttpHeaders.LOCATION, ar.result()).setStatusCode(303).end();
+                } else {
+                    rc.response().setStatusCode(400).end();
+                }
+            });
+        });
+
+        final JWTAuth jwtAuth = Util.createJwtAuth(vertx);
+        router.route().handler(JWTAuthHandler.create(jwtAuth));
+
+        final HttpServerOptions httpServerOptions = new HttpServerOptions()
+                .setDecompressionSupported(true)
+                .setCompressionSupported(true);
+        vertx.createHttpServer(httpServerOptions)
+                .requestHandler(router)
+                .listen(9999, ar -> startFuture.handle(ar.mapEmpty()));
+    }
+
+    private SecurityHandler securityHandler(String clients) {
+        final SecurityHandlerOptions securityHandlerOptions = new SecurityHandlerOptions().setClients(clients);
+        return new SecurityHandler(vertx, pac4jSessionStore, pac4jConfig, pac4jAuthProvider, securityHandlerOptions);
+    }
+
+    private void downloads_scm_annex(Router router) {
         router.get("/downloads/scm/annex").handler(rc -> {
             // sshfs -o ro 192.168.0.74:/app/apache-tomcat-7.0.56/webapps/scm/upload/annex /home/esb/esb-open/downloads/scm/annex
             // sshfs -o ro 192.168.0.231:/usr/local/apache-tomcat-7.0.56/webapps/scm/upload/annex /home/esb/esb-open/downloads/scm/annex
@@ -63,27 +106,6 @@ public class OpenAgentVerticle extends AbstractVerticle {
                     .putHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + URLEncoder.encode(fileName, UTF_8))
                     .putHeader(HttpHeaders.TRANSFER_ENCODING, "chunked")
                     .sendFile(path.toString()).end();
-        });
-
-        final HttpServerOptions httpServerOptions = new HttpServerOptions()
-                .setDecompressionSupported(true)
-                .setCompressionSupported(true);
-        return vertx.createHttpServer(httpServerOptions)
-                .requestHandler(router)
-                .rxListen(9999)
-                .ignoreElement();
-    }
-
-    private void rxSend(RoutingContext rc, String address, String message, String apmOperationName) {
-        final Tracer tracer = OPEN_INJECTOR.getInstance(Tracer.class);
-        final DeliveryOptions deliveryOptions = new DeliveryOptions().setSendTimeout(Duration.ofHours(1).toMillis());
-        final Span span = initApm(rc, tracer, this, apmOperationName, address, deliveryOptions, message);
-        vertx.eventBus().<String>rxRequest(address, message, deliveryOptions).subscribe(reply -> {
-            apmSuccess(rc, span, reply);
-            rc.response().end(reply.body());
-        }, err -> {
-            apmError(rc, span, err);
-            rc.fail(err);
         });
     }
 

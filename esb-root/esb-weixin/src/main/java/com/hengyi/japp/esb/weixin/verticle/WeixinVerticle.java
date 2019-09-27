@@ -1,7 +1,6 @@
 package com.hengyi.japp.esb.weixin.verticle;
 
 import com.hengyi.japp.esb.core.Util;
-import com.hengyi.japp.esb.core.verticle.BaseRestAPIVerticle;
 import com.hengyi.japp.esb.weixin.application.SchedulerPunch;
 import com.hengyi.japp.esb.weixin.application.WeixinService;
 import io.vertx.core.Future;

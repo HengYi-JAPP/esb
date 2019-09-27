@@ -30,7 +30,7 @@ import java.util.Properties;
 public class GuiceSmsModule extends GuiceModule {
 
     GuiceSmsModule(Vertx vertx) {
-        super(vertx);
+        super(vertx, module);
     }
 
     @Override

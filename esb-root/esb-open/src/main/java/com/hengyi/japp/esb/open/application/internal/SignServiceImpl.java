@@ -1,8 +1,10 @@
 package com.hengyi.japp.esb.open.application.internal;
 
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.hengyi.japp.esb.open.application.SignService;
 import io.vertx.core.json.JsonObject;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.Validate;
 import org.apache.commons.text.RandomStringGenerator;
@@ -19,6 +21,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  *
  * @author jzb 2018-04-19
  */
+@Slf4j
+@Singleton
 public class SignServiceImpl implements SignService {
     private final PrivateKey privateKey;
 

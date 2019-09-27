@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <configuration scan="true" scanPeriod="300 seconds" debug="false">
     <jmxConfigurator/>
-    <property name="LOG_HOME" value="/home/mes/esb/esb-sap/log"/>
+    <property name="LOG_HOME" value="/home/esb/esb-sap/log"/>
     <property name="PATTERN" value="%d{yyyy-MM-dd/HH:mm:ss} [%thread] %-5level %logger{35} - %msg%n"/>
     <timestamp key="bySecond" datePattern="yyyyMMdd'T'HHmmss"/>
     <!-- 控制台输出日志 -->

@@ -1,31 +1,19 @@
 package com.hengyi.japp.esb.oa.verticle;
 
-import com.google.inject.Key;
-import com.google.inject.name.Named;
-import com.google.inject.name.Names;
 import com.hengyi.japp.esb.core.Util;
+import com.hengyi.japp.esb.oa.application.OaRestService;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
-import io.opentracing.tag.Tags;
-import io.reactivex.Completable;
-import io.reactivex.Single;
+import io.vertx.core.AbstractVerticle;
+import io.vertx.core.Future;
 import io.vertx.core.eventbus.DeliveryOptions;
-import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerOptions;
-import io.vertx.core.http.impl.headers.VertxHttpHeaders;
-import io.vertx.core.json.JsonObject;
-import io.vertx.reactivex.core.AbstractVerticle;
-import io.vertx.reactivex.core.MultiMap;
-import io.vertx.reactivex.core.buffer.Buffer;
-import io.vertx.reactivex.core.http.HttpServerRequest;
-import io.vertx.reactivex.ext.auth.jwt.JWTAuth;
-import io.vertx.reactivex.ext.web.Router;
-import io.vertx.reactivex.ext.web.RoutingContext;
-import io.vertx.reactivex.ext.web.client.HttpResponse;
-import io.vertx.reactivex.ext.web.client.WebClient;
-import io.vertx.reactivex.ext.web.handler.BodyHandler;
-import io.vertx.reactivex.ext.web.handler.JWTAuthHandler;
-import io.vertx.reactivex.ext.web.handler.ResponseContentTypeHandler;
+import io.vertx.ext.auth.jwt.JWTAuth;
+import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.handler.BodyHandler;
+import io.vertx.ext.web.handler.JWTAuthHandler;
+import io.vertx.ext.web.handler.ResponseContentTypeHandler;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.Duration;
@@ -41,136 +29,82 @@ import static com.hengyi.japp.esb.oa.OaVerticle.OA_INJECTOR;
 @Slf4j
 public class OaAgentVerticle extends AbstractVerticle {
     @Override
-    public Completable rxStart() {
+    public void start(Future<Void> startFuture) throws Exception {
         final Router router = Router.router(vertx);
         router.route().handler(BodyHandler.create());
         router.route().handler(ResponseContentTypeHandler.create());
         final JWTAuth jwtAuth = Util.createJwtAuth(vertx);
         router.route().handler(JWTAuthHandler.create(jwtAuth));
 
-        router.post("/api/WorkflowService/doCreateWorkflowRequest").produces(TEXT_CONTENT_TYPE).handler(rc -> {
-            final String address = "esb:oa:WorkflowService:doCreateWorkflowRequest";
-            rxRequest(rc, address, rc.getBodyAsString(), "WorkflowService:doCreateWorkflowRequest");
-        });
         router.post("/api/yunbiao/WorkflowService/doCreateWorkflowRequest").produces(JSON_CONTENT_TYPE).handler(rc -> {
-            final String address = "esb:oa:yunbiao:WorkflowService:doCreateWorkflowRequest";
-            rxRequest(rc, address, rc.getBodyAsString(), "yunbiao:WorkflowService:doCreateWorkflowRequest");
+            final String apmOperationName = "yunbiao:WorkflowService:doCreateWorkflowRequest";
+            request(rc, rc.getBodyAsString(), apmOperationName);
+        });
+        router.post("/api/WorkflowService/doCreateWorkflowRequest").produces(JSON_CONTENT_TYPE).handler(rc -> {
+            final String apmOperationName = "WorkflowService:doCreateWorkflowRequest";
+            request(rc, rc.getBodyAsString(), apmOperationName);
         });
         router.post("/api/WorkflowService/getWorkflowRequest").produces(JSON_CONTENT_TYPE).handler(rc -> {
-            final String address = "esb:oa:WorkflowService:getWorkflowRequest";
-            rxRequest(rc, address, rc.getBodyAsString(), "WorkflowService:getWorkflowRequest");
+            final String apmOperationName = "WorkflowService:getWorkflowRequest";
+            request(rc, rc.getBodyAsString(), apmOperationName);
         });
         router.post("/api/WorkflowService/deleteRequest").produces(TEXT_CONTENT_TYPE).handler(rc -> {
-            final String address = "esb:oa:WorkflowService:deleteRequest";
-            rxRequest(rc, address, rc.getBodyAsString(), "WorkflowService:deleteRequest");
+            final String apmOperationName = "WorkflowService:deleteRequest";
+            request(rc, rc.getBodyAsString(), apmOperationName);
         });
 
         router.post("/api/BasicDataService/getHrmresourceData").produces(JSON_CONTENT_TYPE).handler(rc -> {
-            final String address = "esb:oa:BasicDataService:getHrmresourceData";
-            rxRequest(rc, address, rc.getBodyAsString(), "BasicDataService:getHrmresourceData");
+            final String apmOperationName = "BasicDataService:getHrmresourceData";
+            request(rc, rc.getBodyAsString(), apmOperationName);
         });
         router.post("/api/BasicDataService/getDepartmentData").produces(JSON_CONTENT_TYPE).handler(rc -> {
-            final String address = "esb:oa:BasicDataService:getDepartmentData";
-            rxRequest(rc, address, rc.getBodyAsString(), "BasicDataService:getDepartmentData");
+            final String apmOperationName = "BasicDataService:getDepartmentData";
+            request(rc, rc.getBodyAsString(), apmOperationName);
         });
         router.post("/api/BasicDataService/getSubcompanyData").produces(JSON_CONTENT_TYPE).handler(rc -> {
-            final String address = "esb:oa:BasicDataService:getSubcompanyData";
-            rxRequest(rc, address, rc.getBodyAsString(), "BasicDataService:getSubcompanyData");
+            final String apmOperationName = "BasicDataService:getSubcompanyData";
+            request(rc, rc.getBodyAsString(), apmOperationName);
         });
 
         router.post("/api/HrmService/getHrmSubcompanyInfo").produces(TEXT_CONTENT_TYPE).handler(rc -> {
-            final String address = "esb:oa:HrmService:getHrmSubcompanyInfo";
-            rxRequest(rc, address, rc.getBodyAsString(), "HrmService:getHrmSubcompanyInfo");
+            final String apmOperationName = "HrmService:getHrmSubcompanyInfo";
+            request(rc, rc.getBodyAsString(), apmOperationName);
         });
         router.post("/api/HrmService/getHrmUserInfo").produces(TEXT_CONTENT_TYPE).handler(rc -> {
-            final String address = "esb:oa:HrmService:getHrmUserInfo";
-            rxRequest(rc, address, rc.getBodyAsString(), "HrmService:getHrmUserInfo");
+            final String apmOperationName = "HrmService:getHrmUserInfo";
+            request(rc, rc.getBodyAsString(), apmOperationName);
         });
 
         router.routeWithRegex("^/api/rest/.+").produces(JSON_CONTENT_TYPE).handler(rc -> {
-            final HttpServerRequest request = rc.request();
-            final HttpMethod httpMethod = request.method();
-            final Named restServiceConfigNamed = Names.named("restServiceConfig");
-            final Key<JsonObject> restServiceConfigKey = Key.get(JsonObject.class, restServiceConfigNamed);
-            final JsonObject restServiceConfig = OA_INJECTOR.getInstance(restServiceConfigKey);
-            final String absoluteURI = restServiceConfig.getString("baseUrl") + request.uri().substring(4);
-            final VertxHttpHeaders headers = new VertxHttpHeaders();
-            final JsonObject headersJsonObject = restServiceConfig.getJsonObject("headers", new JsonObject());
-            headersJsonObject.forEach(entry -> headers.add(entry.getKey(), entry.getValue()));
-            final Tracer tracer = OA_INJECTOR.getInstance(Tracer.class);
-            final Span span = tracer.buildSpan(request.uri())
-                    .withTag(Tags.HTTP_METHOD, request.rawMethod())
-                    .withTag(Tags.HTTP_URL, absoluteURI)
-                    .withTag(Tags.COMPONENT, this.getClass().getName())
-                    .start();
-            final Single<Buffer> result$;
-            switch (httpMethod) {
-                case POST: {
-                    result$ = WebClient.create(vertx).postAbs(absoluteURI)
-                            .putHeaders(MultiMap.newInstance(headers))
-                            .rxSendBuffer(rc.getBody())
-                            .map(HttpResponse::body);
-                    break;
-                }
-                case PUT: {
-                    result$ = WebClient.create(vertx).putAbs(absoluteURI)
-                            .putHeaders(MultiMap.newInstance(headers))
-                            .rxSendBuffer(rc.getBody())
-                            .map(HttpResponse::body);
-                    break;
-                }
-                case GET: {
-                    result$ = WebClient.create(vertx).getAbs(absoluteURI)
-                            .putHeaders(MultiMap.newInstance(headers))
-                            .rxSend()
-                            .map(HttpResponse::body);
-                    break;
-                }
-                case DELETE: {
-                    result$ = WebClient.create(vertx).deleteAbs(absoluteURI)
-                            .putHeaders(MultiMap.newInstance(headers))
-                            .rxSend()
-                            .map(HttpResponse::body);
-                    break;
-                }
-                default: {
-                    result$ = Single.just(Buffer.buffer());
-                    break;
-                }
-            }
-            result$.subscribe(buffer -> {
-                if (span != null) {
-                    span.setTag(Tags.HTTP_STATUS, 200);
-                    span.setTag(Tags.ERROR, false);
-                    span.finish();
-                }
-                rc.response().end(buffer);
-            }, err -> {
-                log.error("", err);
-                apmError(rc, span, err);
-                rc.fail(err);
-            });
+            final OaRestService oaRestService = OA_INJECTOR.getInstance(OaRestService.class);
+            oaRestService.handler(rc);
         });
 
         final HttpServerOptions httpServerOptions = new HttpServerOptions()
                 .setDecompressionSupported(true)
                 .setCompressionSupported(true);
-        return vertx.createHttpServer(httpServerOptions)
+        vertx.createHttpServer(httpServerOptions)
                 .requestHandler(router)
-                .rxListen(9996)
-                .ignoreElement();
+                .listen(9996, ar -> startFuture.handle(ar.mapEmpty()));
     }
 
-    private void rxRequest(RoutingContext rc, String address, String message, String apmOperationName) {
+    private void request(RoutingContext rc, String message, String apmOperationName) {
+        final String address = "esb:oa:" + apmOperationName;
+        request(rc, address, message, apmOperationName);
+    }
+
+    private void request(RoutingContext rc, String address, String message, String apmOperationName) {
         final Tracer tracer = OA_INJECTOR.getInstance(Tracer.class);
         final DeliveryOptions deliveryOptions = new DeliveryOptions().setSendTimeout(Duration.ofHours(1).toMillis());
         final Span span = initApm(rc, tracer, this, apmOperationName, address, deliveryOptions, message);
-        vertx.eventBus().<String>rxRequest(address, message, deliveryOptions).subscribe(reply -> {
-            apmSuccess(rc, span, reply);
-            rc.response().end(reply.body());
-        }, err -> {
-            apmError(rc, span, err);
-            rc.fail(err);
+        vertx.eventBus().<String>request(address, message, deliveryOptions, ar -> {
+            if (ar.succeeded()) {
+                apmSuccess(rc, span, ar.result());
+                rc.response().end(ar.result().body());
+            } else {
+                apmError(rc, span, ar.cause());
+                rc.fail(ar.cause());
+            }
         });
     }
 
