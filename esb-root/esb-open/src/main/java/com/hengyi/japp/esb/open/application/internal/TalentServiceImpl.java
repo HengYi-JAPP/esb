@@ -31,7 +31,7 @@ public class TalentServiceImpl implements TalentService {
     private final WebClient webClient;
 
     @Inject
-    TalentServiceImpl(@Named("vertxConfig") JsonObject vertxConfig, WebClient webClient) {
+    private TalentServiceImpl(@Named("vertxConfig") JsonObject vertxConfig, WebClient webClient) {
         this.restApiConfig = vertxConfig.getJsonObject("talent").getJsonObject("restApi");
         this.autoLoginConfig = vertxConfig.getJsonObject("talent").getJsonObject("autoLogin");
         this.webClient = webClient;

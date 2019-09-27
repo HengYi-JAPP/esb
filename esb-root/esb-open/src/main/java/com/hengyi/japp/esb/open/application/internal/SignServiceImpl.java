@@ -23,7 +23,7 @@ public class SignServiceImpl implements SignService {
     private final PrivateKey privateKey;
 
     @Inject
-    SignServiceImpl(PrivateKey privateKey) {
+    private SignServiceImpl(PrivateKey privateKey) {
         this.privateKey = privateKey;
     }
 

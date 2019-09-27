@@ -2,6 +2,8 @@ package core;
 
 import io.reactivex.Maybe;
 
+import java.util.Base64;
+
 /**
  * 描述：
  *
@@ -13,5 +15,8 @@ public class RxTest {
                 .toSingle("")
                 .doOnSuccess(it -> System.out.print("value=" + it))
                 .subscribe();
+
+        final byte[] bytes = Base64.getDecoder().decode("cm9vdDEyMzQ1");
+        System.out.println(new String(bytes));
     }
 }

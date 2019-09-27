@@ -47,7 +47,7 @@ public class SapVerticle extends MainVerticle {
     }
 
     private Single<String> deployJavaCallSapAgent() {
-        final DeploymentOptions deploymentOptions = new DeploymentOptions().setConfig(config());
+        final DeploymentOptions deploymentOptions = new DeploymentOptions().setConfig(config()).setInstances(20);
         return vertx.rxDeployVerticle(JavaCallSapAgentVerticle.class.getName(), deploymentOptions);
     }
 

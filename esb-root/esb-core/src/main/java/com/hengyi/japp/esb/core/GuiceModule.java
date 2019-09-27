@@ -38,7 +38,6 @@ public class GuiceModule extends AbstractModule {
         return vertxConfig.getString("rootPath");
     }
 
-
     @SneakyThrows
     @Provides
     @Singleton

@@ -2,8 +2,4 @@ dependencies {
     compile project(':esb-core')
 }
 
-jar.manifest {
-    attributes(
-            'Main-Verticle': "com.hengyi.japp.esb.open.OpenVerticle",
-    )
-}
+mainClassName = "com.hengyi.japp.esb.open.OpenVerticle"

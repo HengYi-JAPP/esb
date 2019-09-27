@@ -45,7 +45,7 @@ public class OaVerticle extends MainVerticle {
     }
 
     private Single<String> deployOaAgent() {
-        final DeploymentOptions deploymentOptions = new DeploymentOptions().setConfig(config());
+        final DeploymentOptions deploymentOptions = new DeploymentOptions().setConfig(config()).setInstances(20);
         return vertx.rxDeployVerticle(OaAgentVerticle.class.getName(), deploymentOptions);
     }
 

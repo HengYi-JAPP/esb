@@ -26,7 +26,7 @@ public class TexbeedataServiceImpl implements TexbeedataService {
     private final WebClient webClient;
 
     @Inject
-    TexbeedataServiceImpl(@Named("vertxConfig") JsonObject vertxConfig, SignService signService, WebClient webClient) {
+    private TexbeedataServiceImpl(@Named("vertxConfig") JsonObject vertxConfig, SignService signService, WebClient webClient) {
         this.config = vertxConfig.getJsonObject("texbeedata");
         this.signService = signService;
         this.webClient = webClient;

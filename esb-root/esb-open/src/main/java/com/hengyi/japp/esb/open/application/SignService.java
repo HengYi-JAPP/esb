@@ -1,5 +1,7 @@
 package com.hengyi.japp.esb.open.application;
 
+import com.google.inject.ImplementedBy;
+import com.hengyi.japp.esb.open.application.internal.SignServiceImpl;
 import io.vertx.core.json.JsonObject;
 import org.apache.commons.lang3.Validate;
 
@@ -12,6 +14,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  *
  * @author jzb 2018-04-19
  */
+@ImplementedBy(SignServiceImpl.class)
 public interface SignService {
 
     default String encodeToString(final byte[] bytes) {
