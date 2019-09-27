@@ -7,5 +7,6 @@ dependencies {
 mainClassName = "com.hengyi.japp.esb.sap.SapVerticle"
 
 docker {
+    name "hengyi/sap"
     files "/home/jzb/yun/Sap/ABAP/JCO/sapjco3-linuxx86_64-3.0.9/libsapjco3.so"
 }

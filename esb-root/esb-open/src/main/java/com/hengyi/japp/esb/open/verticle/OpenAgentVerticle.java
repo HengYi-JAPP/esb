@@ -37,10 +37,13 @@ public class OpenAgentVerticle extends AbstractVerticle {
         final Router router = Router.router(vertx);
         router.route().handler(BodyHandler.create());
         router.route().handler(ResponseContentTypeHandler.create());
+        final JWTAuth jwtAuth = Util.createJwtAuth(vertx);
+        router.route("/api/*").handler(JWTAuthHandler.create(jwtAuth));
 
         // 无token api
         router.get("/downloads/scm/annex").handler(rc -> {
             // sshfs -o ro 192.168.0.74:/app/apache-tomcat-7.0.56/webapps/scm/upload/annex /home/esb/esb-open/downloads/scm/annex
+            // sshfs -o ro 192.168.0.231:/usr/local/apache-tomcat-7.0.56/webapps/scm/upload/annex /home/esb/esb-open/downloads/scm/annex
             final Path rootPath = Paths.get("/home/esb/esb-open/downloads/scm/annex");
             final Path path = Optional.ofNullable(rc.queryParam("path"))
                     .filter(J::nonEmpty)
@@ -55,16 +58,12 @@ public class OpenAgentVerticle extends AbstractVerticle {
                     .filter(J::nonEmpty)
                     .map(it -> it.get(0))
                     .orElse(FilenameUtils.getName(path.toString()));
-            //http://localhost:9999/downloads/scm/annex
             rc.response()
                     .putHeader(HttpHeaders.CONTENT_TYPE, "application/octet-stream")
-                    .putHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, UTF_8))
+                    .putHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + URLEncoder.encode(fileName, UTF_8))
                     .putHeader(HttpHeaders.TRANSFER_ENCODING, "chunked")
                     .sendFile(path.toString()).end();
         });
-
-        final JWTAuth jwtAuth = Util.createJwtAuth(vertx);
-        router.route().handler(JWTAuthHandler.create(jwtAuth));
 
         final HttpServerOptions httpServerOptions = new HttpServerOptions()
                 .setDecompressionSupported(true)
@@ -79,7 +78,7 @@ public class OpenAgentVerticle extends AbstractVerticle {
         final Tracer tracer = OPEN_INJECTOR.getInstance(Tracer.class);
         final DeliveryOptions deliveryOptions = new DeliveryOptions().setSendTimeout(Duration.ofHours(1).toMillis());
         final Span span = initApm(rc, tracer, this, apmOperationName, address, deliveryOptions, message);
-        vertx.eventBus().<String>rxSend(address, message, deliveryOptions).subscribe(reply -> {
+        vertx.eventBus().<String>rxRequest(address, message, deliveryOptions).subscribe(reply -> {
             apmSuccess(rc, span, reply);
             rc.response().end(reply.body());
         }, err -> {

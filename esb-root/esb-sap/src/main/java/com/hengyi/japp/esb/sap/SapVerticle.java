@@ -55,9 +55,11 @@ public class SapVerticle extends MainVerticle {
         final DeploymentOptions deploymentOptions = new DeploymentOptions()
                 .setConfig(config())
                 .setWorker(true)
+                .setWorkerPoolName(JavaCallSapWorkerVerticle.class.getSimpleName())
+                .setWorkerPoolSize(100_000)
+                .setInstances(100_000)
                 .setMaxWorkerExecuteTime(1)
-                .setMaxWorkerExecuteTimeUnit(TimeUnit.DAYS)
-                .setInstances(1000);
+                .setMaxWorkerExecuteTimeUnit(TimeUnit.DAYS);
         return vertx.rxDeployVerticle(JavaCallSapWorkerVerticle.class.getName(), deploymentOptions);
     }
 

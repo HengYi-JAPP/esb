@@ -1,5 +1,6 @@
 package com.hengyi.japp.esb.oa.verticle;
 
+import com.hengyi.japp.esb.oa.OaUtil;
 import com.hengyi.japp.esb.oa.command.DeleteRequestCommand;
 import com.hengyi.japp.esb.oa.command.DoCreateWorkflowRequestCommand;
 import com.hengyi.japp.esb.oa.command.DoCreateWorkflowRequestCommandByYunbiao;
@@ -102,7 +103,7 @@ public class WorkflowServiceVerticle extends AbstractVerticle {
                 final GetWorkflowRequestCommand command = MAPPER.readValue(reply.body(), GetWorkflowRequestCommand.class);
                 final WorkflowServicePortType workflowServicePortType = OA_INJECTOR.getInstance(WorkflowServicePortType.class);
                 final WorkflowRequestInfo workflowRequestInfo = workflowServicePortType.getWorkflowRequest(command.getRequestid(), command.getUserid(), command.getFromrequestid());
-                return new JsonObject().put("data", workflowRequestInfo).encode();
+                return OaUtil.toJsonObject(workflowRequestInfo).encode();
             }).subscribe(it -> {
                 apmSuccess(reply, span, it);
                 reply.reply(it);

@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<configuration>
+<configuration scan="true" scanPeriod="300 seconds" debug="false">
     <jmxConfigurator/>
-    <property name="LOG_HOME" value="/home/esb/esb-sap/log"/>
-    <property name="PATTERN" value="%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{35} - %msg%n"/>
+    <property name="LOG_HOME" value="/home/mes/esb/esb-sap/log"/>
+    <property name="PATTERN" value="%d{yyyy-MM-dd/HH:mm:ss} [%thread] %-5level %logger{35} - %msg%n"/>
     <timestamp key="bySecond" datePattern="yyyyMMdd'T'HHmmss"/>
     <!-- 控制台输出日志 -->
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
+        <encoder charset="UTF-8">
             <pattern>${PATTERN}</pattern>
         </encoder>
     </appender>
@@ -15,31 +15,34 @@
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
             <level>error</level>
         </filter>
-        <File>${LOG_HOME}/error.txt</File>
-        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <FileNamePattern>${LOG_HOME}/error-%d{yyyy-MM-dd}.%i.txt</FileNamePattern>
-            <maxFileSize>100MB</maxFileSize>
-            <maxHistory>20</maxHistory>
-            <totalSizeCap>2GB</totalSizeCap>
-        </rollingPolicy>
-        <encoder>
+        <encoder charset="UTF-8">
             <pattern>${PATTERN}</pattern>
         </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>${LOG_HOME}/error/log-%d{yyyy-MM-dd}.%i.txt</FileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>100MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>100</maxHistory>
+        </rollingPolicy>
     </appender>
+
     <appender name="INFO_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <File>${LOG_HOME}/info/log.txt</File>
-        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-            <FileNamePattern>${LOG_HOME}/info/log.%i.txt</FileNamePattern>
-            <MinIndex>1</MinIndex>
-            <MaxIndex>3</MaxIndex>
-        </rollingPolicy>
-        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
-            <MaxFileSize>100MB</MaxFileSize>
-        </triggeringPolicy>
-        <encoder>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>info</level>
+        </filter>
+        <encoder charset="UTF-8">
             <pattern>${PATTERN}</pattern>
         </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>${LOG_HOME}/info/log-%d{yyyy-MM-dd}.%i.txt</FileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>100MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>100</maxHistory>
+        </rollingPolicy>
     </appender>
+
     <root level="info">
         <appender-ref ref="STDOUT"/>
         <appender-ref ref="INFO_FILE"/>

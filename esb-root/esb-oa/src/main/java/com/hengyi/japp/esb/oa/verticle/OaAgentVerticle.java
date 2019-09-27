@@ -50,41 +50,41 @@ public class OaAgentVerticle extends AbstractVerticle {
 
         router.post("/api/WorkflowService/doCreateWorkflowRequest").produces(TEXT_CONTENT_TYPE).handler(rc -> {
             final String address = "esb:oa:WorkflowService:doCreateWorkflowRequest";
-            rxSend(rc, address, rc.getBodyAsString(), "WorkflowService:doCreateWorkflowRequest");
+            rxRequest(rc, address, rc.getBodyAsString(), "WorkflowService:doCreateWorkflowRequest");
         });
         router.post("/api/yunbiao/WorkflowService/doCreateWorkflowRequest").produces(JSON_CONTENT_TYPE).handler(rc -> {
             final String address = "esb:oa:yunbiao:WorkflowService:doCreateWorkflowRequest";
-            rxSend(rc, address, rc.getBodyAsString(), "yunbiao:WorkflowService:doCreateWorkflowRequest");
+            rxRequest(rc, address, rc.getBodyAsString(), "yunbiao:WorkflowService:doCreateWorkflowRequest");
         });
-        router.post("/api/WorkflowService/getWorkflowRequest").produces(TEXT_CONTENT_TYPE).handler(rc -> {
+        router.post("/api/WorkflowService/getWorkflowRequest").produces(JSON_CONTENT_TYPE).handler(rc -> {
             final String address = "esb:oa:WorkflowService:getWorkflowRequest";
-            rxSend(rc, address, rc.getBodyAsString(), "WorkflowService:getWorkflowRequest");
+            rxRequest(rc, address, rc.getBodyAsString(), "WorkflowService:getWorkflowRequest");
         });
         router.post("/api/WorkflowService/deleteRequest").produces(TEXT_CONTENT_TYPE).handler(rc -> {
             final String address = "esb:oa:WorkflowService:deleteRequest";
-            rxSend(rc, address, rc.getBodyAsString(), "WorkflowService:deleteRequest");
+            rxRequest(rc, address, rc.getBodyAsString(), "WorkflowService:deleteRequest");
         });
 
         router.post("/api/BasicDataService/getHrmresourceData").produces(JSON_CONTENT_TYPE).handler(rc -> {
             final String address = "esb:oa:BasicDataService:getHrmresourceData";
-            rxSend(rc, address, rc.getBodyAsString(), "BasicDataService:getHrmresourceData");
+            rxRequest(rc, address, rc.getBodyAsString(), "BasicDataService:getHrmresourceData");
         });
         router.post("/api/BasicDataService/getDepartmentData").produces(JSON_CONTENT_TYPE).handler(rc -> {
             final String address = "esb:oa:BasicDataService:getDepartmentData";
-            rxSend(rc, address, rc.getBodyAsString(), "BasicDataService:getDepartmentData");
+            rxRequest(rc, address, rc.getBodyAsString(), "BasicDataService:getDepartmentData");
         });
         router.post("/api/BasicDataService/getSubcompanyData").produces(JSON_CONTENT_TYPE).handler(rc -> {
             final String address = "esb:oa:BasicDataService:getSubcompanyData";
-            rxSend(rc, address, rc.getBodyAsString(), "BasicDataService:getSubcompanyData");
+            rxRequest(rc, address, rc.getBodyAsString(), "BasicDataService:getSubcompanyData");
         });
 
         router.post("/api/HrmService/getHrmSubcompanyInfo").produces(TEXT_CONTENT_TYPE).handler(rc -> {
             final String address = "esb:oa:HrmService:getHrmSubcompanyInfo";
-            rxSend(rc, address, rc.getBodyAsString(), "HrmService:getHrmSubcompanyInfo");
+            rxRequest(rc, address, rc.getBodyAsString(), "HrmService:getHrmSubcompanyInfo");
         });
         router.post("/api/HrmService/getHrmUserInfo").produces(TEXT_CONTENT_TYPE).handler(rc -> {
             final String address = "esb:oa:HrmService:getHrmUserInfo";
-            rxSend(rc, address, rc.getBodyAsString(), "HrmService:getHrmUserInfo");
+            rxRequest(rc, address, rc.getBodyAsString(), "HrmService:getHrmUserInfo");
         });
 
         router.routeWithRegex("^/api/rest/.+").produces(JSON_CONTENT_TYPE).handler(rc -> {
@@ -161,11 +161,11 @@ public class OaAgentVerticle extends AbstractVerticle {
                 .ignoreElement();
     }
 
-    private void rxSend(RoutingContext rc, String address, String message, String apmOperationName) {
+    private void rxRequest(RoutingContext rc, String address, String message, String apmOperationName) {
         final Tracer tracer = OA_INJECTOR.getInstance(Tracer.class);
         final DeliveryOptions deliveryOptions = new DeliveryOptions().setSendTimeout(Duration.ofHours(1).toMillis());
         final Span span = initApm(rc, tracer, this, apmOperationName, address, deliveryOptions, message);
-        vertx.eventBus().<String>rxSend(address, message, deliveryOptions).subscribe(reply -> {
+        vertx.eventBus().<String>rxRequest(address, message, deliveryOptions).subscribe(reply -> {
             apmSuccess(rc, span, reply);
             rc.response().end(reply.body());
         }, err -> {

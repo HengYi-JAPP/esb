@@ -59,7 +59,7 @@ public class JavaCallSapAgentVerticle extends AbstractVerticle {
             final DeliveryOptions deliveryOptions = new DeliveryOptions().setSendTimeout(Duration.ofHours(1).toMillis());
             final Tracer tracer = SAP_INJECTOR.getInstance(Tracer.class);
             final Span span = initApm(rc, tracer, this, rfcName, address, deliveryOptions, body);
-            vertx.eventBus().<String>rxSend(address, message, deliveryOptions).subscribe(reply -> {
+            vertx.eventBus().<String>rxRequest(address, message, deliveryOptions).subscribe(reply -> {
                 rc.response().end(reply.body());
                 apmSuccess(rc, span, reply);
             }, err -> {
@@ -77,7 +77,7 @@ public class JavaCallSapAgentVerticle extends AbstractVerticle {
             final Tracer tracer = SAP_INJECTOR.getInstance(Tracer.class);
             final Span span = initApm(rc, tracer, this, rfcName, address, deliveryOptions, body);
             final HttpRequest<Buffer> callback = WebClient.create(vertx).post("");
-            vertx.eventBus().<String>rxSend(address, message, deliveryOptions)
+            vertx.eventBus().<String>rxRequest(address, message, deliveryOptions)
                     .map(Message::body)
                     .map(Buffer::buffer)
                     .flatMap(callback::rxSendBuffer)

@@ -28,6 +28,7 @@ public class JavaCallSapWorkerVerticle extends AbstractVerticle {
         return vertx.eventBus().<JsonObject>consumer(address, reply -> {
             final JsonObject jsonObject = reply.body();
             final String rfcName = jsonObject.getString("rfcName");
+            final StringBuilder sb = new StringBuilder(rfcName).append("\n");
             final String body = jsonObject.getString("body");
             final Tracer tracer = SAP_INJECTOR.getInstance(Tracer.class);
             final Span span = initApm(reply, tracer, this, rfcName, address);
@@ -39,6 +40,7 @@ public class JavaCallSapWorkerVerticle extends AbstractVerticle {
                 return SapUtil.params2String(f);
             }).subscribe(it -> {
                 apmSuccess(reply, span, it);
+                log.info(sb.append(it).toString());
                 reply.reply(it);
             }, err -> {
                 log.error(rfcName, err);

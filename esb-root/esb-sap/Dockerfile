@@ -1,8 +1,8 @@
 FROM mcr.microsoft.com/java/jre:11u3-zulu-centos
 
-ENV LANG     en_US.UTF-8
-ENV LANGUAGE en_US.UTF-8
-ENV LC_ALL   en_US.UTF-8
+ENV LANG     zh_CN.UTF-8
+ENV LANGUAGE zh_CN.UTF-8
+ENV LC_ALL   zh_CN.UTF-8
 ENV TZ Asia/Shanghai
 ENV JAVA_TOOL_OPTIONS="-XX:+UseContainerSupport"
 ENV JAVA_OPTIONS ""
@@ -211,21 +211,21 @@ RUN  echo "sapdp00  3200/tcp" >> /etc/services \
     && echo "sapgw99  3399/tcp" >> /etc/services \
     && echo "sapmsEP1 	3600/tcp" >> /etc/services
 
-ENV VERTICLE_HOME /usr/verticles
-ENV VERTICLE_FILE esb-sap-fat.jar
-COPY $VERTICLE_FILE $VERTICLE_HOME/
+#ENV VERTICLE_HOME /usr/verticles
+#ENV VERTICLE_FILE esb-sap-fat.jar
+#COPY $VERTICLE_FILE $VERTICLE_HOME/
 
-EXPOSE 9876
-EXPOSE 9997
+#EXPOSE 9876
+#EXPOSE 9997
 
-WORKDIR $VERTICLE_HOME
-ENTRYPOINT ["sh", "-c"]
-CMD ["exec java --add-modules java.se \
---add-exports java.base/jdk.internal.ref=ALL-UNNAMED \
---add-opens java.base/java.lang=ALL-UNNAMED \
---add-opens java.base/java.lang.invoke=ALL-UNNAMED \
---add-opens java.base/java.nio=ALL-UNNAMED \
---add-opens java.base/sun.nio.ch=ALL-UNNAMED \
---add-opens java.management/sun.management=ALL-UNNAMED \
---add-opens jdk.management/com.sun.management.internal=ALL-UNNAMED \
-$JAVA_OPTIONS -jar $VERTICLE_FILE -conf /home/esb/esb-sap/config.json -Dvertx.metrics.options.enabled=true -Dvertx.metrics.options.jmxEnabled=true"]
+#WORKDIR $VERTICLE_HOME
+#ENTRYPOINT ["sh", "-c"]
+#CMD ["exec java --add-modules java.se \
+#--add-exports java.base/jdk.internal.ref=ALL-UNNAMED \
+#--add-opens java.base/java.lang=ALL-UNNAMED \
+#--add-opens java.base/java.lang.invoke=ALL-UNNAMED \
+#--add-opens java.base/java.nio=ALL-UNNAMED \
+#--add-opens java.base/sun.nio.ch=ALL-UNNAMED \
+#--add-opens java.management/sun.management=ALL-UNNAMED \
+#--add-opens jdk.management/com.sun.management.internal=ALL-UNNAMED \
+#$JAVA_OPTIONS -jar $VERTICLE_FILE -conf /home/esb/esb-sap/config.json -Dvertx.metrics.options.enabled=true -Dvertx.metrics.options.jmxEnabled=true"]

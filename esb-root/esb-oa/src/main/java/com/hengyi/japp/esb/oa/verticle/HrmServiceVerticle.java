@@ -20,31 +20,27 @@ public class HrmServiceVerticle extends AbstractVerticle {
     @Override
     public Completable rxStart() {
         return Completable.mergeArray(
-                vertx.eventBus().<String>consumer("esb:oa:HrmService:getHrmSubcompanyInfo", reply -> {
-                    Single.fromCallable(() -> {
-                        final HrmServicePortType hrmServicePortType = OA_INJECTOR.getInstance(HrmServicePortType.class);
-                        final ArrayOfSubCompanyBean arrayOfSubCompanyBean = hrmServicePortType.getHrmSubcompanyInfo("");
-                        return MAPPER.writeValueAsString(arrayOfSubCompanyBean.getSubCompanyBean());
-                    }).subscribe(it -> {
-                        reply.reply(it);
-                    }, err -> {
-                        log.error("", err);
-                        reply.fail(400, err.getLocalizedMessage());
-                    });
-                }).rxCompletionHandler(),
+                vertx.eventBus().consumer("esb:oa:HrmService:getHrmSubcompanyInfo", reply -> Single.fromCallable(() -> {
+                    final HrmServicePortType hrmServicePortType = OA_INJECTOR.getInstance(HrmServicePortType.class);
+                    final ArrayOfSubCompanyBean arrayOfSubCompanyBean = hrmServicePortType.getHrmSubcompanyInfo("");
+                    return MAPPER.writeValueAsString(arrayOfSubCompanyBean.getSubCompanyBean());
+                }).subscribe(it -> {
+                    reply.reply(it);
+                }, err -> {
+                    log.error("", err);
+                    reply.fail(400, err.getLocalizedMessage());
+                })).rxCompletionHandler(),
 
-                vertx.eventBus().<String>consumer("esb:oa:HrmService:getHrmUserInfo", reply -> {
-                    Single.fromCallable(() -> {
-                        final HrmServicePortType hrmServicePortType = OA_INJECTOR.getInstance(HrmServicePortType.class);
-                        final ArrayOfUserBean arrayOfUserBean = hrmServicePortType.getHrmUserInfo(null, null, null, null, null, null);
-                        return MAPPER.writeValueAsString(arrayOfUserBean.getUserBean());
-                    }).subscribe(it -> {
-                        reply.reply(it);
-                    }, err -> {
-                        log.error("", err);
-                        reply.fail(400, err.getLocalizedMessage());
-                    });
-                }).rxCompletionHandler()
+                vertx.eventBus().consumer("esb:oa:HrmService:getHrmUserInfo", reply -> Single.fromCallable(() -> {
+                    final HrmServicePortType hrmServicePortType = OA_INJECTOR.getInstance(HrmServicePortType.class);
+                    final ArrayOfUserBean arrayOfUserBean = hrmServicePortType.getHrmUserInfo(null, null, null, null, null, null);
+                    return MAPPER.writeValueAsString(arrayOfUserBean.getUserBean());
+                }).subscribe(it -> {
+                    reply.reply(it);
+                }, err -> {
+                    log.error("", err);
+                    reply.fail(400, err.getLocalizedMessage());
+                })).rxCompletionHandler()
         );
     }
 }
