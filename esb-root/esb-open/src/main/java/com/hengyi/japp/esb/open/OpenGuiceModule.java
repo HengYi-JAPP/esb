@@ -35,6 +35,13 @@ public class OpenGuiceModule extends AbstractModule {
 
     @Provides
     @Singleton
+    @Named("pac4jConfig")
+    private JsonObject pac4jConfig(@Named("vertxConfig") JsonObject vertxConfig) {
+        return vertxConfig.getJsonObject("pac4j", new JsonObject());
+    }
+
+    @Provides
+    @Singleton
     private Pac4jAuthProvider Pac4jAuthProvider() {
         return new Pac4jAuthProvider();
     }
@@ -53,8 +60,8 @@ public class OpenGuiceModule extends AbstractModule {
 
     @Provides
     @Singleton
-    private Config Config(@Named("vertxConfig") JsonObject vertxConfig, CasClient casClient) {
-        final String baseUrl = vertxConfig.getString("baseUrl", "http://localhost:9999");
+    private Config Config(@Named("pac4jConfig") JsonObject pac4jConfig, CasClient casClient) {
+        final String baseUrl = pac4jConfig.getString("baseUrl", "http://localhost:9999");
         final Clients clients = new Clients(baseUrl + "/callback", casClient);
         final Config config = new Config(clients);
         config.setHttpActionAdapter(new DefaultHttpActionAdapter());
@@ -63,8 +70,8 @@ public class OpenGuiceModule extends AbstractModule {
 
     @Provides
     @Singleton
-    private CasClient CasClient(Vertx vertx, @Named("vertxConfig") JsonObject vertxConfig) {
-        final String casUrl = vertxConfig.getString("casUrl", "http://cas.hengyi.com:8080/login");
+    private CasClient CasClient(Vertx vertx, @Named("pac4jConfig") JsonObject pac4jConfig) {
+        final String casUrl = pac4jConfig.getString("casUrl", "http://cas.hengyi.com:8080/login");
         final CasConfiguration casConfiguration = new CasConfiguration(casUrl);
         casConfiguration.setLogoutHandler(new VertxCasLogoutHandler(new VertxLocalMapStore(vertx), false));
         return new CasClient(casConfiguration);
