@@ -5,6 +5,7 @@ import com.google.inject.Injector;
 import com.hengyi.japp.esb.core.GuiceModule;
 import com.hengyi.japp.esb.sap.application.internal.JcoDataProvider;
 import com.hengyi.japp.esb.sap.verticle.JavaCallSapAgentVerticle;
+import com.hengyi.japp.esb.sap.verticle.JavaCallSapWorkerAsyncVerticle;
 import com.hengyi.japp.esb.sap.verticle.JavaCallSapWorkerVerticle;
 import io.vertx.core.*;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +22,7 @@ public class SapVerticle extends AbstractVerticle {
 
     public static void main(String[] args) {
         final VertxOptions vertxOptions = new VertxOptions()
-                .setWorkerPoolSize(10_000)
+//                .setWorkerPoolSize(10_000)
                 .setMaxWorkerExecuteTime(1)
                 .setMaxWorkerExecuteTimeUnit(TimeUnit.DAYS)
                 .setMaxEventLoopExecuteTime(1)
@@ -42,7 +43,10 @@ public class SapVerticle extends AbstractVerticle {
 
     @Override
     public void start(Future<Void> startFuture) throws Exception {
-        deployJavaCallSapWorker().compose(f -> deployJavaCallSapAgent()).<Void>mapEmpty().setHandler(startFuture);
+        CompositeFuture.all(
+                deployJavaCallSapWorker(),
+                deployJavaCallSapWorkerAsync()
+        ).compose(f -> deployJavaCallSapAgent()).<Void>mapEmpty().setHandler(startFuture);
     }
 
     private Future<String> deployJavaCallSapAgent() {
@@ -57,12 +61,19 @@ public class SapVerticle extends AbstractVerticle {
             final DeploymentOptions deploymentOptions = new DeploymentOptions()
                     .setConfig(config())
                     .setWorker(true)
-//                    .setWorkerPoolName(JavaCallSapWorkerVerticle.class.getSimpleName())
-//                    .setWorkerPoolSize(100_000)
                     .setInstances(10_000)
                     .setMaxWorkerExecuteTime(1)
                     .setMaxWorkerExecuteTimeUnit(TimeUnit.DAYS);
             vertx.deployVerticle(JavaCallSapWorkerVerticle.class, deploymentOptions, promise);
+        });
+    }
+
+    private Future<String> deployJavaCallSapWorkerAsync() {
+        return Future.future(promise -> {
+            final DeploymentOptions deploymentOptions = new DeploymentOptions()
+                    .setConfig(config())
+                    .setWorker(true);
+            vertx.deployVerticle(JavaCallSapWorkerAsyncVerticle.class, deploymentOptions, promise);
         });
     }
 

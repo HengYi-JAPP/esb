@@ -8,10 +8,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.sap.conn.jco.*;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -80,6 +77,13 @@ public class SapUtil {
                     setParam(record, rowNode);
                 });
                 return table;
+            }
+            case JCoMetaData.TYPE_DATE: {
+                if (fieldNode.isNumber()) {
+                    final long l = fieldNode.asLong();
+                    return new Date(l);
+                }
+                return fieldNode.asText();
             }
             default: {
                 return fieldNode.asText();

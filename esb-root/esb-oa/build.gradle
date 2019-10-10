@@ -1,14 +1,14 @@
 //  /opt/apache-cxf-3.3.2/bin/wsdl2java -clientjar oa-BasicDataService-wsimport.jar -d /home/jzb/Templates/lib -p com.hengyi.japp.esb.oa.soap.BasicDataService http://220.189.213.71:8077//services/WorkflowService?wsdl
 dependencies {
     compile project(':esb-core'),
+            "io.vertx:vertx-web-client",
             files('/home/jzb/Templates/lib/oa-WorkflowService-wsimport.jar',
                     '/home/jzb/Templates/lib/oa-BasicDataService-wsimport.jar',
                     '/home/jzb/Templates/lib/oa-HrmService-wsimport.jar'),
-            "io.vertx:vertx-web-client",
             'com.sun.xml.ws:jaxws-ri:2.3.2',
             'com.sun.xml.ws:jaxws-tools:2.3.2',
-            'org.apache.cxf:cxf-rt-frontend-jaxws:3.3.2',
-            'org.apache.cxf:cxf-rt-transports-http:3.3.2'
+            'org.apache.cxf:cxf-rt-frontend-jaxws:3.3.3',
+            'org.apache.cxf:cxf-rt-transports-http:3.3.3'
 }
 
 mainClassName = "com.hengyi.japp.esb.oa.OaVerticle"

@@ -1,4 +1,4 @@
-package com.hengyi.japp.esb.sap;
+package com.hengyi.japp.esb.sap.callback;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
@@ -7,17 +7,13 @@ import com.rabbitmq.client.Address;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import io.vertx.core.json.JsonObject;
-import lombok.Cleanup;
+import loa.biz.LOAApp;
 import lombok.SneakyThrows;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import reactor.rabbitmq.*;
 
 import javax.inject.Named;
-import java.io.File;
-import java.io.FileReader;
-import java.nio.file.Path;
-import java.util.Properties;
 
 import static reactor.rabbitmq.Utils.singleConnectionMono;
 
@@ -26,18 +22,22 @@ import static reactor.rabbitmq.Utils.singleConnectionMono;
  *
  * @author jzb 2018-03-21
  */
-public class SapGuiceModule extends AbstractModule {
+public class LoaGuiceModule extends AbstractModule {
 
     @SneakyThrows
     @Provides
     @Singleton
-    @Named("sap.properties")
-    private Properties SapProperties(@Named("rootPath") Path rootPath) {
-        final File file = rootPath.resolve("sap.properties").toFile();
-        @Cleanup final FileReader reader = new FileReader(file);
-        final Properties properties = new Properties();
-        properties.load(reader);
-        return properties;
+    private LOAApp LOAApp(@Named("vertxConfig") JsonObject vertxConfig) {
+        final JsonObject config = vertxConfig.getJsonObject("loa", new JsonObject());
+        final String appUrl = config.getString("appUrl", "http://wms.hengyi.com:8400/10001/openapi/1.0");
+        final String appName = config.getString("appName", "e7cdbb3b-7f9f-42bd-910c-f4091c6b12a2");
+        final String appKey = config.getString("appKey", "360057f7-9295-4e77-afcd-aea3384906cf");
+        final String account = config.getString("account", "hywsc");
+        final String pwd = config.getString("pwd", "123456");
+        final LOAApp app = LOAApp.getInstance();
+        app.init(appUrl, appName, appKey, true);
+        app.login(account, pwd);
+        return app;
     }
 
     @Provides
@@ -47,7 +47,7 @@ public class SapGuiceModule extends AbstractModule {
         final String host = config.getString("host", "192.168.0.38");
         final String username = config.getString("username", "admin");
         final String password = config.getString("password", "tomking");
-        final String clientProvidedName = config.getString("clientProvidedName", "esb-sap-sender");
+        final String clientProvidedName = config.getString("clientProvidedName", "loa-extra-sender");
 
         final ConnectionFactory connectionFactory = new ConnectionFactory();
         connectionFactory.useNio();
@@ -74,7 +74,7 @@ public class SapGuiceModule extends AbstractModule {
         final String host = config.getString("host", "192.168.0.38");
         final String username = config.getString("username", "admin");
         final String password = config.getString("password", "tomking");
-        final String clientProvidedName = config.getString("clientProvidedName", "esb-sap-receiver");
+        final String clientProvidedName = config.getString("clientProvidedName", "loa-extra-receiver");
 
         final ConnectionFactory connectionFactory = new ConnectionFactory();
         connectionFactory.useNio();

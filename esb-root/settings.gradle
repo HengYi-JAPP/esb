@@ -7,3 +7,5 @@ include 'esb-oa'
 include 'esb-sms'
 include 'esb-weixin'
 include 'esb-sdk'
+include 'loa-extra'
+

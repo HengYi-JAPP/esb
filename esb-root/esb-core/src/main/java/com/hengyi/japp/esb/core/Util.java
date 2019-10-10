@@ -1,5 +1,6 @@
 package com.hengyi.japp.esb.core;
 
+import com.github.ixtf.japp.core.J;
 import com.hengyi.japp.esb.core.apm.RCTextMapExtractAdapter;
 import com.hengyi.japp.esb.core.apm.RCTextMapInjectAdapter;
 import io.opentracing.Span;
@@ -104,6 +105,26 @@ public class Util {
             log.error("initApm", e);
             return null;
         }
+    }
+
+    public static void apmSuccess(Span span, String message) {
+        if (span == null) {
+            return;
+        }
+        span.setTag(Tags.ERROR, false);
+        if (J.nonBlank(message)) {
+            span.log(message);
+        }
+        span.finish();
+    }
+
+    public static void apmError(Span span, Throwable err) {
+        if (span == null) {
+            return;
+        }
+        span.setTag(Tags.ERROR, true);
+        span.log(err.getMessage());
+        span.finish();
     }
 
     public static void apmSuccess(Message reply, Span span, String message) {

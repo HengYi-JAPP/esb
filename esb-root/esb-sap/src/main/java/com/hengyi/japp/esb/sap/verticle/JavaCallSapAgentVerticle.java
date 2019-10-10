@@ -13,6 +13,7 @@ import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.JWTAuthHandler;
 import io.vertx.ext.web.handler.ResponseContentTypeHandler;
@@ -48,58 +49,8 @@ public class JavaCallSapAgentVerticle extends AbstractVerticle {
 
         final JWTAuth jwtAuth = Util.createJwtAuth(vertx);
         router.route().handler(JWTAuthHandler.create(jwtAuth));
-
-        router.post("/api/rfcs/:rfcName").produces(JSON_CONTENT_TYPE).handler(rc -> {
-            final String address = "esb:sap:JavaCallSap";
-            final String rfcName = rc.pathParam("rfcName");
-            final String body = rc.getBodyAsString();
-            final JsonObject message = new JsonObject().put("rfcName", rfcName).put("body", body);
-            final DeliveryOptions deliveryOptions = new DeliveryOptions().setSendTimeout(Duration.ofHours(1).toMillis());
-            final Tracer tracer = SAP_INJECTOR.getInstance(Tracer.class);
-            final Span span = initApm(rc, tracer, this, rfcName, address, deliveryOptions, body);
-            vertx.eventBus().<String>request(address, message, deliveryOptions, ar -> {
-                if (ar.succeeded()) {
-                    apmSuccess(rc, span, ar.result());
-                    rc.response().end(ar.result().body());
-                } else {
-                    apmError(rc, span, ar.cause());
-                    rc.fail(ar.cause());
-                }
-            });
-        });
-
-//        router.post("/api/async/rfcs/:rfcName").produces(JSON_CONTENT_TYPE).handler(rc -> {
-//            final String address = "esb:sap:JavaCallSap";
-//            final String rfcName = rc.pathParam("rfcName");
-//            final String body = rc.getBodyAsString();
-//            final JsonObject message = new JsonObject().put("rfcName", rfcName).put("body", body);
-//            final DeliveryOptions deliveryOptions = new DeliveryOptions().setSendTimeout(Duration.ofHours(1).toMillis());
-//            final Tracer tracer = SAP_INJECTOR.getInstance(Tracer.class);
-//            final Span span = initApm(rc, tracer, this, rfcName, address, deliveryOptions, body);
-//            final HttpRequest<Buffer> callback = WebClient.create(vertx).post("");
-//            vertx.eventBus().<String>rxRequest(address, message, deliveryOptions)
-//                    .map(Message::body)
-//                    .map(Buffer::buffer)
-//                    .flatMap(callback::rxSendBuffer)
-//                    .retry(5)
-//                    .subscribe(res -> {
-//                        if (span == null) {
-//                            return;
-//                        }
-//                        span.setTag(Tags.HTTP_STATUS, 200);
-//                        span.setTag(Tags.ERROR, false);
-//                        span.finish();
-//                    }, err -> {
-//                        if (span == null) {
-//                            return;
-//                        }
-//                        span.setTag(Tags.HTTP_STATUS, 400);
-//                        span.setTag(Tags.ERROR, true);
-//                        span.log(err.getMessage());
-//                        span.finish();
-//                    });
-//            rc.response().end();
-//        });
+        router.post("/api/rfcs/:rfcName").produces(JSON_CONTENT_TYPE).handler(rc -> request("esb:sap:JavaCallSap", rc));
+        router.post("/api/async/rfcs/:rfcName").produces(JSON_CONTENT_TYPE).handler(rc -> request("esb:sap:async:JavaCallSap", rc));
 
         final HttpServerOptions httpServerOptions = new HttpServerOptions()
                 .setDecompressionSupported(true)
@@ -107,6 +58,29 @@ public class JavaCallSapAgentVerticle extends AbstractVerticle {
         vertx.createHttpServer(httpServerOptions)
                 .requestHandler(router)
                 .listen(9997, ar -> startFuture.handle(ar.mapEmpty()));
+    }
+
+    private void request(String address, RoutingContext rc) {
+        final String rfcName = rc.pathParam("rfcName");
+        final String body = rc.getBodyAsString();
+        final JsonObject message = new JsonObject().put("rfcName", rfcName).put("body", body);
+        final DeliveryOptions deliveryOptions = new DeliveryOptions().setSendTimeout(Duration.ofHours(1).toMillis());
+        final Tracer tracer = SAP_INJECTOR.getInstance(Tracer.class);
+        final Span span = initApm(rc, tracer, this, rfcName, address, deliveryOptions, body);
+        vertx.eventBus().<String>request(address, message, deliveryOptions, ar -> {
+            if (ar.succeeded()) {
+                apmSuccess(rc, span, ar.result());
+                final String result = ar.result().body();
+                if (result == null) {
+                    rc.response().end();
+                } else {
+                    rc.response().end(result);
+                }
+            } else {
+                apmError(rc, span, ar.cause());
+                rc.fail(ar.cause());
+            }
+        });
     }
 
 }

@@ -1,0 +1,18 @@
+dependencies {
+    compile project(':esb-core'),
+            files('/home/jzb/Templates/lib/loaOpenApi-0.0.5-jdk6-SNAPSHOT.jar'),
+            "io.projectreactor.rabbitmq:reactor-rabbitmq:1.3.0.RELEASE"
+
+    // https://mvnrepository.com/artifact/net.sf.json-lib/json-lib
+    compile group: 'net.sf.json-lib', name: 'json-lib', version: '2.4'
+// https://mvnrepository.com/artifact/commons-lang/commons-lang
+    compile group: 'commons-lang', name: 'commons-lang', version: '2.4'
+// https://mvnrepository.com/artifact/commons-beanutils/commons-beanutils
+    compile group: 'commons-beanutils', name: 'commons-beanutils', version: '1.8.3'
+// https://mvnrepository.com/artifact/commons-collections/commons-collections
+    compile group: 'commons-collections', name: 'commons-collections', version: '3.2.1'
+// https://mvnrepository.com/artifact/net.sf.ezmorph/ezmorph
+    compile group: 'net.sf.ezmorph', name: 'ezmorph', version: '1.0.3'
+// https://mvnrepository.com/artifact/org.apache.httpcomponents/httpmime
+    compile group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.4'
+}
