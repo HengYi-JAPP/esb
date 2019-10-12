@@ -9,6 +9,8 @@ dependencies {
             'com.sun.xml.ws:jaxws-tools:2.3.2',
             'org.apache.cxf:cxf-rt-frontend-jaxws:3.3.3',
             'org.apache.cxf:cxf-rt-transports-http:3.3.3'
+// https://mvnrepository.com/artifact/com.sun.activation/javax.activation
+    compile group: 'com.sun.activation', name: 'javax.activation', version: '1.2.0'
 }
 
 mainClassName = "com.hengyi.japp.esb.oa.OaVerticle"

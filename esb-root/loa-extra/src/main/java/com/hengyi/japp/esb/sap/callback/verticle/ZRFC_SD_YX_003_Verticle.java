@@ -1,4 +1,4 @@
-package com.hengyi.japp.esb.sap.callback;
+package com.hengyi.japp.esb.sap.callback.verticle;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.hengyi.japp.esb.sap.callback.apm.RCTextMapExtractAdapter_OutboundMessage;
@@ -71,9 +71,10 @@ public class ZRFC_SD_YX_003_Verticle extends AbstractVerticle {
         Mono.fromCallable(() -> {
             final JsonNode node = MAPPER.readTree(delivery.getBody());
             final JsonNode ET_ORDER_RE = node.get("tables").get("ET_ORDER_RE");
+            final String TRANSID = UUID.randomUUID().toString();
             for (JsonNode row : ET_ORDER_RE) {
                 LOAFormDataObject vObj = app.newFormDataObject("ZRFC_SD_YX_003回调表");
-                vObj.addRawValue("TRANSID", UUID.randomUUID().toString());
+                vObj.addRawValue("TRANSID", TRANSID);
                 vObj.addRawValue("VBELN", row.get("VBELN").asText());
                 vObj.addRawValue("OPT", row.get("OPT").asText());
                 vObj.addRawValue("ZYXDH", row.get("ZYXDH").asText());

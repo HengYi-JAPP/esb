@@ -3,6 +3,7 @@ package com.hengyi.japp.esb.sap.callback;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.hengyi.japp.esb.core.GuiceModule;
+import com.hengyi.japp.esb.sap.callback.verticle.ZRFC_SD_YX_003_Verticle;
 import io.vertx.core.*;
 import lombok.extern.slf4j.Slf4j;
 

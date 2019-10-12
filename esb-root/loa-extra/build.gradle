@@ -16,3 +16,5 @@ dependencies {
 // https://mvnrepository.com/artifact/org.apache.httpcomponents/httpmime
     compile group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.4'
 }
+
+mainClassName = "com.hengyi.japp.esb.sap.callback.LoaVerticle"
