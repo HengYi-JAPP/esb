@@ -20,7 +20,7 @@ import io.vertx.ext.web.client.WebClient;
 import lombok.extern.slf4j.Slf4j;
 
 import static com.hengyi.japp.esb.core.Util.apmError;
-import static com.hengyi.japp.esb.oa.OaVerticle.OA_INJECTOR;
+import static com.hengyi.japp.esb.oa.OaGuiceModule.OA_INJECTOR;
 
 /**
  * @author jzb 2019-09-27

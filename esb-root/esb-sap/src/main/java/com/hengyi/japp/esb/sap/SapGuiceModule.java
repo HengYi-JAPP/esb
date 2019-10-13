@@ -1,11 +1,12 @@
 package com.hengyi.japp.esb.sap;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
+import com.google.inject.*;
+import com.hengyi.japp.esb.core.GuiceModule;
+import com.hengyi.japp.esb.sap.application.internal.JcoDataProvider;
 import com.rabbitmq.client.Address;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import lombok.Cleanup;
 import lombok.SneakyThrows;
@@ -27,6 +28,23 @@ import static reactor.rabbitmq.Utils.singleConnectionMono;
  * @author jzb 2018-03-21
  */
 public class SapGuiceModule extends AbstractModule {
+    private static Injector SAP_INJECTOR;
+
+    synchronized public static void init(Vertx vertx) {
+        if (SAP_INJECTOR != null) {
+            return;
+        }
+        SAP_INJECTOR = Guice.createInjector(new GuiceModule(vertx, "esb-sap"), new SapGuiceModule());
+        JcoDataProvider.init();
+    }
+
+    public static <T> T getInstance(Class<T> clazz) {
+        return SAP_INJECTOR.getInstance(clazz);
+    }
+
+    public static <T> T getInstance(Key<T> key) {
+        return SAP_INJECTOR.getInstance(key);
+    }
 
     @SneakyThrows
     @Provides

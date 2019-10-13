@@ -1,12 +1,13 @@
 package test;
 
+import com.hengyi.japp.esb.sap.callback.LoaGuiceModule;
+import io.vertx.core.Vertx;
 import loa.biz.LOAApp;
 import loa.biz.LOAFormDataObject;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
-import java.util.Base64;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -17,15 +18,11 @@ import java.util.concurrent.TimeUnit;
 public class LoaTest {
     @SneakyThrows
     public static void main(String[] args) {
-        final byte[] bytes = Base64.getDecoder().decode("cm9vdDEyMzQ");
-        System.out.println(new String(bytes));
-
-
-        LOAApp vApp = LOAApp.getInstance();
-        vApp.init("http://wms.hengyi.com:8400/10001/openapi/1.0", "e7cdbb3b-7f9f-42bd-910c-f4091c6b12a2", "360057f7-9295-4e77-afcd-aea3384906cf", false);
+        final Vertx vertx = Vertx.vertx();
+        LoaGuiceModule.init(vertx);
 
         Mono.fromCallable(() -> {
-            vApp.login("hywsc", "123456");
+            final LOAApp vApp = LoaGuiceModule.getInstance(LOAApp.class);
             LOAFormDataObject vObj = vApp.newFormDataObject("ZRFC_SD_YX_003回调表");
             vObj.addRawValue("TRANSID", UUID.randomUUID().toString());
             vObj.addRawValue("VBELN", "aaa111");

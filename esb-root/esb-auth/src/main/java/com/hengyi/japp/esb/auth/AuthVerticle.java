@@ -1,11 +1,10 @@
 package com.hengyi.japp.esb.auth;
 
-import com.google.inject.Guice;
-import com.google.inject.Injector;
 import com.hengyi.japp.esb.auth.verticle.AuthAgentVerticle;
 import com.hengyi.japp.esb.auth.verticle.AuthServiceVerticle;
-import com.hengyi.japp.esb.core.GuiceModule;
-import io.vertx.core.*;
+import io.vertx.core.AbstractVerticle;
+import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Future;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.TimeUnit;
@@ -17,31 +16,10 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 public class AuthVerticle extends AbstractVerticle {
-    public static String AUTH_MODULE = "esb-auth";
-    public static Injector AUTH_INJECTOR;
-
-    public static void main(String[] args) {
-        final VertxOptions vertxOptions = new VertxOptions()
-                .setWorkerPoolSize(1000)
-                .setMaxWorkerExecuteTime(1)
-                .setMaxWorkerExecuteTimeUnit(TimeUnit.DAYS)
-                .setMaxEventLoopExecuteTime(1)
-                .setMaxEventLoopExecuteTimeUnit(TimeUnit.MINUTES);
-        final Vertx vertx = Vertx.vertx(vertxOptions);
-        AUTH_INJECTOR = Guice.createInjector(new GuiceModule(vertx, AUTH_MODULE), new AuthGuiceModule());
-
-        final DeploymentOptions deploymentOptions = new DeploymentOptions();
-        vertx.deployVerticle(AuthVerticle.class, deploymentOptions, ar -> {
-            if (ar.succeeded()) {
-                log.info("===Esb Auth[" + ar.result() + "] 启动成功===");
-            } else {
-                log.error("===Esb Auth 启动失败===", ar.cause());
-            }
-        });
-    }
 
     @Override
     public void start(Future<Void> startFuture) throws Exception {
+        AuthGuiceModule.init(vertx);
         deployAuthService().compose(f -> deployAgent()).<Void>mapEmpty().setHandler(startFuture);
     }
 

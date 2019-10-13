@@ -1,13 +1,12 @@
 package com.hengyi.japp.esb.sap;
 
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.hengyi.japp.esb.core.GuiceModule;
-import com.hengyi.japp.esb.sap.application.internal.JcoDataProvider;
 import com.hengyi.japp.esb.sap.verticle.JavaCallSapAgentVerticle;
 import com.hengyi.japp.esb.sap.verticle.JavaCallSapWorkerAsyncVerticle;
 import com.hengyi.japp.esb.sap.verticle.JavaCallSapWorkerVerticle;
-import io.vertx.core.*;
+import io.vertx.core.AbstractVerticle;
+import io.vertx.core.CompositeFuture;
+import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Future;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.TimeUnit;
@@ -17,32 +16,10 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 public class SapVerticle extends AbstractVerticle {
-    public static String SAP_MODULE = "esb-sap";
-    public static Injector SAP_INJECTOR;
-
-    public static void main(String[] args) {
-        final VertxOptions vertxOptions = new VertxOptions()
-                .setWorkerPoolSize(10_000)
-                .setMaxWorkerExecuteTime(1)
-                .setMaxWorkerExecuteTimeUnit(TimeUnit.DAYS)
-                .setMaxEventLoopExecuteTime(1)
-                .setMaxEventLoopExecuteTimeUnit(TimeUnit.MINUTES);
-        final Vertx vertx = Vertx.vertx(vertxOptions);
-        SAP_INJECTOR = Guice.createInjector(new GuiceModule(vertx, SAP_MODULE), new SapGuiceModule());
-        JcoDataProvider.init();
-
-        final DeploymentOptions deploymentOptions = new DeploymentOptions();
-        vertx.deployVerticle(SapVerticle.class, deploymentOptions, ar -> {
-            if (ar.succeeded()) {
-                log.info("===Esb Sap[" + ar.result() + "] 启动成功===");
-            } else {
-                log.error("===Esb Sap 启动失败===", ar.cause());
-            }
-        });
-    }
 
     @Override
     public void start(Future<Void> startFuture) throws Exception {
+        SapGuiceModule.init(vertx);
         CompositeFuture.all(
                 deployJavaCallSapWorker(),
                 deployJavaCallSapWorkerAsync()

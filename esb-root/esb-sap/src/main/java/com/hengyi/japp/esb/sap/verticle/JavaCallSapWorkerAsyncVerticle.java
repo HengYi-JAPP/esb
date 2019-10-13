@@ -2,6 +2,7 @@ package com.hengyi.japp.esb.sap.verticle;
 
 import com.github.ixtf.japp.core.J;
 import com.google.common.collect.Maps;
+import com.hengyi.japp.esb.sap.SapGuiceModule;
 import com.hengyi.japp.esb.sap.SapUtil;
 import com.hengyi.japp.esb.sap.apm.RCTextMapExtractAdapter_OutboundMessage;
 import com.hengyi.japp.esb.sap.apm.RCTextMapInjectAdapter_OutboundMessage;
@@ -28,8 +29,7 @@ import java.util.Map;
 
 import static com.hengyi.japp.esb.core.Util.apmError;
 import static com.hengyi.japp.esb.core.Util.apmSuccess;
-import static com.hengyi.japp.esb.sap.SapVerticle.SAP_INJECTOR;
-import static com.hengyi.japp.esb.sap.verticle.JavaCallSapWorkerVerticle.QUEUE_SAP;
+import static com.hengyi.japp.esb.sap.verticle.JavaCallSapWorkerVerticle.QUEUE_ASYNC_CALL_SAP;
 import static io.opentracing.propagation.Format.Builtin.TEXT_MAP;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -38,7 +38,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 @Slf4j
 public class JavaCallSapWorkerAsyncVerticle extends AbstractVerticle {
-    public static final String EXCHANGE_CALLBACK = "esb-sap-callback-exchange";
+    public static final String EXCHANGE_CALLBACK = "esb:sap:callback";
     private static final SendOptions sendOptions = new SendOptions().exceptionHandler(
             new ExceptionHandlers.RetrySendingExceptionHandler(
                     Duration.ofHours(1), Duration.ofMinutes(5),
@@ -71,16 +71,18 @@ public class JavaCallSapWorkerAsyncVerticle extends AbstractVerticle {
 
     @Override
     public void start() throws Exception {
-        final Receiver receiver = SAP_INJECTOR.getInstance(Receiver.class);
-        receiver.consumeManualAck(QUEUE_SAP, consumeOptions).subscribe(this::callSap);
+        final Receiver receiver = SapGuiceModule.getInstance(Receiver.class);
+        receiver.consumeManualAck(QUEUE_ASYNC_CALL_SAP, consumeOptions).subscribe(this::callSap);
     }
 
     private void callSap(AcknowledgableDelivery delivery) {
+        final Sender sender = SapGuiceModule.getInstance(Sender.class);
+        final Tracer tracer = SapGuiceModule.getInstance(Tracer.class);
+
         final JsonObject jsonObject = new JsonObject(Buffer.buffer(delivery.getBody()));
         final String rfcName = jsonObject.getString("rfcName");
         final StringBuilder sb = new StringBuilder(rfcName).append("\n");
         final String body = jsonObject.getString("body");
-        final Tracer tracer = SAP_INJECTOR.getInstance(Tracer.class);
         final Span span = initApm(delivery, tracer, this, rfcName);
         Mono.fromCallable(() -> {
             final JCoDestination dest = JCoDestinationManager.getDestination(JcoDataProvider.KEY);
@@ -91,11 +93,12 @@ public class JavaCallSapWorkerAsyncVerticle extends AbstractVerticle {
         }).subscribeOn(Schedulers.elastic()).doOnSuccess(sapRet -> {
             delivery.ack();
             final Map<String, Object> headers = Maps.newHashMap();
+            final String TRANSID = delivery.getProperties().getHeaders().get("TRANSID").toString();
+            headers.put("TRANSID", TRANSID);
             tracer.inject(span.context(), TEXT_MAP, new RCTextMapInjectAdapter_OutboundMessage(headers));
             final BasicProperties basicProperties = new BasicProperties.Builder().headers(headers).build();
             final OutboundMessage outboundMessage = new OutboundMessage(EXCHANGE_CALLBACK, rfcName, basicProperties, sapRet.getBytes(UTF_8));
             final Mono<OutboundMessage> outboundMessageMono = Mono.just(outboundMessage);
-            final Sender sender = SAP_INJECTOR.getInstance(Sender.class);
             sender.sendWithPublishConfirms(outboundMessageMono, sendOptions).next().subscribe(it -> {
                 if (it.isAck()) {
                     apmSuccess(span, sapRet);

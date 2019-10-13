@@ -11,7 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
 import static com.hengyi.japp.esb.core.Util.*;
-import static com.hengyi.japp.esb.oa.OaVerticle.OA_INJECTOR;
+import static com.hengyi.japp.esb.oa.OaGuiceModule.OA_INJECTOR;
 
 /**
  * @author jzb 2019-08-02

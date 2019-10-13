@@ -2,4 +2,9 @@ dependencies {
     compile project(':esb-core')
 }
 
-mainClassName = "com.hengyi.japp.esb.auth.AuthVerticle"
+mainClassName = "io.vertx.core.Launcher"
+jar.manifest {
+    attributes(
+            'Main-Verticle': "com.hengyi.japp.esb.auth.AuthVerticle",
+    )
+}

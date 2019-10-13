@@ -12,8 +12,7 @@ dependencies {
             'com.sun.activation:javax.activation:1.2.0'
 }
 
-//mainClassName = "com.hengyi.japp.esb.oa.OaVerticle"
-mainClassName = "io.vertx.core.Launcher"
+mainClassName = "com.hengyi.japp.esb.oa.OaLauncher"
 jar.manifest {
     attributes(
             'Main-Verticle': "com.hengyi.japp.esb.oa.OaVerticle",

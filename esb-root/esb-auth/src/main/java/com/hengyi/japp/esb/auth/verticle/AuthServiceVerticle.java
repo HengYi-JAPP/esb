@@ -9,7 +9,7 @@ import io.vertx.core.json.JsonObject;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
-import static com.hengyi.japp.esb.auth.AuthVerticle.AUTH_INJECTOR;
+import static com.hengyi.japp.esb.auth.AuthGuiceModule.AUTH_INJECTOR;
 
 /**
  * @author jzb 2018-03-18

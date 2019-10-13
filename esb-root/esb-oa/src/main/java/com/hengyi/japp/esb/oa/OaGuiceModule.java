@@ -1,15 +1,15 @@
 package com.hengyi.japp.esb.oa;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
+import com.google.inject.*;
 import com.google.inject.name.Named;
+import com.hengyi.japp.esb.core.GuiceModule;
 import com.hengyi.japp.esb.oa.soap.BasicDataService.BasicDataService;
 import com.hengyi.japp.esb.oa.soap.BasicDataService.BasicDataServicePortType;
 import com.hengyi.japp.esb.oa.soap.HrmService.HrmService;
 import com.hengyi.japp.esb.oa.soap.HrmService.HrmServicePortType;
 import com.hengyi.japp.esb.oa.soap.WorkflowService.WorkflowService;
 import com.hengyi.japp.esb.oa.soap.WorkflowService.WorkflowServicePortType;
+import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import lombok.SneakyThrows;
 
@@ -21,6 +21,14 @@ import java.net.URL;
  * @author jzb 2018-03-21
  */
 public class OaGuiceModule extends AbstractModule {
+
+    public static Injector OA_INJECTOR;
+
+    synchronized public static void init(Vertx vertx) {
+        if (OA_INJECTOR == null) {
+            OA_INJECTOR = Guice.createInjector(new GuiceModule(vertx, "esb-oa"), new OaGuiceModule());
+        }
+    }
 
     @SneakyThrows
     @Provides

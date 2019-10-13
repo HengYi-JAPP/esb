@@ -17,7 +17,7 @@ services:
     container_name: esb-sap
     network_mode: host
     restart: always
-    command: sh -c "java -jar /home/esb/esb-sap/libs/2.0/esb-sap-fat.jar -conf /home/esb/esb-sap/config.json"
+    command: sh -c "java ${dd} -jar /home/esb/esb-sap/libs/2.0/esb-sap-fat.jar -conf /home/esb/esb-sap/config.json"
     volumes:
       - ./esb-sap:/home/esb/esb-sap
     expose:
@@ -26,6 +26,15 @@ services:
     ports:
       - "9997:9997"
       - "9876:9876"
+
+  loa-extra:
+    image: mcr.microsoft.com/java/jre:11u3-zulu-alpine
+    container_name: loa-extra
+    network_mode: host
+    restart: always
+    command: sh -c "java -jar /home/esb/loa-extra/libs/${VER_LOA_EXTRA}/loa-extra-fat.jar"
+    volumes:
+      - ./loa-extra:/home/esb/loa-extra
 
   esb-oa:
     image: mcr.microsoft.com/java/jre:11u3-zulu-alpine

@@ -1,6 +1,7 @@
 package com.hengyi.japp.esb.sap.verticle;
 
 import com.hengyi.japp.esb.core.Util;
+import com.hengyi.japp.esb.sap.SapGuiceModule;
 import com.hengyi.japp.esb.sap.application.internal.JcoDataProvider;
 import com.sap.conn.jco.JCoDestination;
 import com.sap.conn.jco.JCoDestinationManager;
@@ -26,7 +27,6 @@ import java.time.Duration;
 import static com.hengyi.japp.esb.core.Constant.JSON_CONTENT_TYPE;
 import static com.hengyi.japp.esb.core.Constant.TEXT_CONTENT_TYPE;
 import static com.hengyi.japp.esb.core.Util.*;
-import static com.hengyi.japp.esb.sap.SapVerticle.SAP_INJECTOR;
 
 /**
  * @author jzb 2018-03-18
@@ -49,8 +49,8 @@ public class JavaCallSapAgentVerticle extends AbstractVerticle {
 
         final JWTAuth jwtAuth = Util.createJwtAuth(vertx);
         router.route().handler(JWTAuthHandler.create(jwtAuth));
-        router.post("/api/rfcs/:rfcName").produces(JSON_CONTENT_TYPE).handler(rc -> request("esb:sap:JavaCallSap", rc));
-        router.post("/api/async/rfcs/:rfcName").produces(JSON_CONTENT_TYPE).handler(rc -> request("esb:sap:async:JavaCallSap", rc));
+        router.post("/api/rfcs/:rfcName").produces(JSON_CONTENT_TYPE).handler(rc -> request(rc, "esb:sap:JavaCallSap"));
+        router.post("/api/async/rfcs/:rfcName").produces(JSON_CONTENT_TYPE).handler(rc -> request(rc, "esb:sap:async:JavaCallSap"));
 
         final HttpServerOptions httpServerOptions = new HttpServerOptions()
                 .setDecompressionSupported(true)
@@ -60,12 +60,12 @@ public class JavaCallSapAgentVerticle extends AbstractVerticle {
                 .listen(9997, ar -> startFuture.handle(ar.mapEmpty()));
     }
 
-    private void request(String address, RoutingContext rc) {
+    private void request(RoutingContext rc, String address) {
+        final Tracer tracer = SapGuiceModule.getInstance(Tracer.class);
         final String rfcName = rc.pathParam("rfcName");
         final String body = rc.getBodyAsString();
         final JsonObject message = new JsonObject().put("rfcName", rfcName).put("body", body);
         final DeliveryOptions deliveryOptions = new DeliveryOptions().setSendTimeout(Duration.ofHours(1).toMillis());
-        final Tracer tracer = SAP_INJECTOR.getInstance(Tracer.class);
         final Span span = initApm(rc, tracer, this, rfcName, address, deliveryOptions, body);
         vertx.eventBus().<String>request(address, message, deliveryOptions, ar -> {
             if (ar.succeeded()) {

@@ -21,7 +21,7 @@ import java.time.Duration;
 import static com.hengyi.japp.esb.core.Constant.JSON_CONTENT_TYPE;
 import static com.hengyi.japp.esb.core.Constant.TEXT_CONTENT_TYPE;
 import static com.hengyi.japp.esb.core.Util.*;
-import static com.hengyi.japp.esb.oa.OaVerticle.OA_INJECTOR;
+import static com.hengyi.japp.esb.oa.OaGuiceModule.OA_INJECTOR;
 
 /**
  * @author jzb 2019-08-02

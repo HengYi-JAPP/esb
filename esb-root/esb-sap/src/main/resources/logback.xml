@@ -5,6 +5,13 @@
     <property name="PATTERN" value="%d{yyyy-MM-dd/HH:mm:ss} [%thread] %-5level %logger{35} - %msg%n"/>
     <timestamp key="bySecond" datePattern="yyyyMMdd'T'HHmmss"/>
 
+    <!-- 控制台输出日志 -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder charset="UTF-8">
+            <pattern>${PATTERN}</pattern>
+        </encoder>
+    </appender>
+
     <!-- 文件输出日志 (文件大小策略进行文件输出，超过指定大小对文件备份)-->
     <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
@@ -14,7 +21,7 @@
             <pattern>${PATTERN}</pattern>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <FileNamePattern>${LOG_HOME}/info/log-%d{yyyy-MM-dd}.%i.txt</FileNamePattern>
+            <fileNamePattern>${LOG_HOME}/error/log-%d{yyyy-MM-dd}.%i.txt</fileNamePattern>
             <maxFileSize>100MB</maxFileSize>
             <maxHistory>100</maxHistory>
             <totalSizeCap>20GB</totalSizeCap>
@@ -29,7 +36,7 @@
             <pattern>${PATTERN}</pattern>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <FileNamePattern>${LOG_HOME}/info/log-%d{yyyy-MM-dd}.%i.txt</FileNamePattern>
+            <fileNamePattern>${LOG_HOME}/info/log-%d{yyyy-MM-dd}.%i.txt</fileNamePattern>
             <maxFileSize>100MB</maxFileSize>
             <maxHistory>100</maxHistory>
             <totalSizeCap>20GB</totalSizeCap>
@@ -37,7 +44,8 @@
     </appender>
 
     <root level="info">
-        <appender-ref ref="INFO_FILE"/>
+        <appender-ref ref="STDOUT"/>
         <appender-ref ref="ERROR_FILE"/>
+        <appender-ref ref="INFO_FILE"/>
     </root>
 </configuration>

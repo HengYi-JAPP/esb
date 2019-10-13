@@ -6,9 +6,14 @@ dependencies {
             "io.projectreactor.rabbitmq:reactor-rabbitmq:1.3.0.RELEASE"
 }
 
-mainClassName = "com.hengyi.japp.esb.sap.SapVerticle"
-
 docker {
     name "hengyi/sap"
     files "/home/jzb/yun/Sap/ABAP/JCO/sapjco3-linuxx86_64-3.0.9/libsapjco3.so"
+}
+
+mainClassName = "com.hengyi.japp.esb.sap.SapLauncher"
+jar.manifest {
+    attributes(
+            'Main-Verticle': "com.hengyi.japp.esb.sap.SapVerticle",
+    )
 }

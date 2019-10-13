@@ -1,6 +1,7 @@
 package com.hengyi.japp.esb.sap.callback.verticle;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.hengyi.japp.esb.sap.callback.LoaGuiceModule;
 import com.hengyi.japp.esb.sap.callback.apm.RCTextMapExtractAdapter_OutboundMessage;
 import com.rabbitmq.client.Delivery;
 import io.opentracing.Span;
@@ -19,12 +20,10 @@ import reactor.rabbitmq.ExceptionHandlers;
 import reactor.rabbitmq.Receiver;
 
 import java.time.Duration;
-import java.util.UUID;
 
 import static com.github.ixtf.japp.core.Constant.MAPPER;
 import static com.hengyi.japp.esb.core.Util.apmError;
 import static com.hengyi.japp.esb.core.Util.apmSuccess;
-import static com.hengyi.japp.esb.sap.callback.LoaGuiceModule.LOA_INJECTOR;
 import static io.opentracing.propagation.Format.Builtin.TEXT_MAP;
 
 /**
@@ -33,7 +32,7 @@ import static io.opentracing.propagation.Format.Builtin.TEXT_MAP;
 @Slf4j
 public class ZRFC_SD_YX_003_Verticle extends AbstractVerticle {
     private static final String RFC_NAME = "ZRFC_SD_YX_003";
-    private static final String QUEUE = "esb-sap-callback-" + RFC_NAME;
+    private static final String QUEUE = "esb:sap:callback:" + RFC_NAME;
     private static final ConsumeOptions consumeOptions = new ConsumeOptions().exceptionHandler(
             new ExceptionHandlers.RetryAcknowledgmentExceptionHandler(
                     Duration.ofMinutes(10), Duration.ofSeconds(5),
@@ -60,18 +59,19 @@ public class ZRFC_SD_YX_003_Verticle extends AbstractVerticle {
 
     @Override
     public void start() throws Exception {
-        final Receiver receiver = LOA_INJECTOR.getInstance(Receiver.class);
+        final Receiver receiver = LoaGuiceModule.getInstance(Receiver.class);
         receiver.consumeManualAck(QUEUE, consumeOptions).subscribe(this::exe);
     }
 
     private void exe(AcknowledgableDelivery delivery) {
-        final LOAApp app = LOA_INJECTOR.getInstance(LOAApp.class);
-        final Tracer tracer = LOA_INJECTOR.getInstance(Tracer.class);
+        final LOAApp app = LoaGuiceModule.getInstance(LOAApp.class);
+        final Tracer tracer = LoaGuiceModule.getInstance(Tracer.class);
         final Span span = initApm(delivery, tracer, this, RFC_NAME);
         Mono.fromCallable(() -> {
             final JsonNode node = MAPPER.readTree(delivery.getBody());
             final JsonNode ET_ORDER_RE = node.get("tables").get("ET_ORDER_RE");
-            final String TRANSID = UUID.randomUUID().toString();
+            final String TRANSID = delivery.getProperties().getHeaders().get("TRANSID").toString();
+            span.setTag("TRANSID", TRANSID);
             for (JsonNode row : ET_ORDER_RE) {
                 LOAFormDataObject vObj = app.newFormDataObject("ZRFC_SD_YX_003回调表");
                 vObj.addRawValue("TRANSID", TRANSID);

@@ -14,7 +14,7 @@ import reactor.core.publisher.Mono;
 
 import static com.github.ixtf.japp.core.Constant.MAPPER;
 import static com.hengyi.japp.esb.core.Util.*;
-import static com.hengyi.japp.esb.oa.OaVerticle.OA_INJECTOR;
+import static com.hengyi.japp.esb.oa.OaGuiceModule.OA_INJECTOR;
 
 /**
  * @author jzb 2019-08-02
