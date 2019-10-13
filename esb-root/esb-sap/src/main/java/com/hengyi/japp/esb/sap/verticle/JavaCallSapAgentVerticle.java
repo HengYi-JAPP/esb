@@ -49,8 +49,8 @@ public class JavaCallSapAgentVerticle extends AbstractVerticle {
 
         final JWTAuth jwtAuth = Util.createJwtAuth(vertx);
         router.route().handler(JWTAuthHandler.create(jwtAuth));
-        router.post("/api/rfcs/:rfcName").produces(JSON_CONTENT_TYPE).handler(rc -> request("esb:sap:JavaCallSap", rc));
-        router.post("/api/async/rfcs/:rfcName").produces(JSON_CONTENT_TYPE).handler(rc -> request("esb:sap:async:JavaCallSap", rc));
+        router.post("/api/rfcs/:rfcName").produces(JSON_CONTENT_TYPE).handler(rc -> request(rc, "esb:sap:JavaCallSap"));
+        router.post("/api/async/rfcs/:rfcName").produces(JSON_CONTENT_TYPE).handler(rc -> request(rc, "esb:sap:async:JavaCallSap"));
 
         final HttpServerOptions httpServerOptions = new HttpServerOptions()
                 .setDecompressionSupported(true)
@@ -60,7 +60,7 @@ public class JavaCallSapAgentVerticle extends AbstractVerticle {
                 .listen(9997, ar -> startFuture.handle(ar.mapEmpty()));
     }
 
-    private void request(String address, RoutingContext rc) {
+    private void request(RoutingContext rc, String address) {
         final String rfcName = rc.pathParam("rfcName");
         final String body = rc.getBodyAsString();
         final JsonObject message = new JsonObject().put("rfcName", rfcName).put("body", body);
