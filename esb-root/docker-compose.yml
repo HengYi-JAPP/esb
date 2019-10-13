@@ -15,6 +15,7 @@ services:
   esb-sap:
     image: mcr.microsoft.com/java/jre:11u3-zulu-alpine
     container_name: esb-sap
+    network_mode: host
     restart: always
     command: sh -c "java -jar /home/esb/esb-sap/libs/2.0/esb-sap-fat.jar -conf /home/esb/esb-sap/config.json"
     volumes:

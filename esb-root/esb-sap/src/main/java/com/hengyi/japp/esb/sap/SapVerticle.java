@@ -22,7 +22,7 @@ public class SapVerticle extends AbstractVerticle {
 
     public static void main(String[] args) {
         final VertxOptions vertxOptions = new VertxOptions()
-//                .setWorkerPoolSize(10_000)
+                .setWorkerPoolSize(10_000)
                 .setMaxWorkerExecuteTime(1)
                 .setMaxWorkerExecuteTimeUnit(TimeUnit.DAYS)
                 .setMaxEventLoopExecuteTime(1)

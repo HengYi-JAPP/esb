@@ -24,7 +24,7 @@ import java.util.UUID;
 import static com.github.ixtf.japp.core.Constant.MAPPER;
 import static com.hengyi.japp.esb.core.Util.apmError;
 import static com.hengyi.japp.esb.core.Util.apmSuccess;
-import static com.hengyi.japp.esb.sap.callback.LoaVerticle.LOA_INJECTOR;
+import static com.hengyi.japp.esb.sap.callback.LoaGuiceModule.LOA_INJECTOR;
 import static io.opentracing.propagation.Format.Builtin.TEXT_MAP;
 
 /**

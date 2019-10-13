@@ -1,11 +1,11 @@
 package com.hengyi.japp.esb.sap.callback;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
+import com.google.inject.*;
+import com.hengyi.japp.esb.core.GuiceModule;
 import com.rabbitmq.client.Address;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import loa.biz.LOAApp;
 import lombok.SneakyThrows;
@@ -23,6 +23,13 @@ import static reactor.rabbitmq.Utils.singleConnectionMono;
  * @author jzb 2018-03-21
  */
 public class LoaGuiceModule extends AbstractModule {
+    public static Injector LOA_INJECTOR;
+
+    synchronized public static void init(Vertx vertx) {
+        if (LOA_INJECTOR == null) {
+            LOA_INJECTOR = Guice.createInjector(new GuiceModule(vertx, "loa-extra"), new LoaGuiceModule());
+        }
+    }
 
     @SneakyThrows
     @Provides
