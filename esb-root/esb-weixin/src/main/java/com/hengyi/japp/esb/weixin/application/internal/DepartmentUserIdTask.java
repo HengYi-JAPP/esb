@@ -1,5 +1,6 @@
 package com.hengyi.japp.esb.weixin.application.internal;
 
+import lombok.SneakyThrows;
 import org.jzb.weixin.work.AgentClient;
 import org.jzb.weixin.work.contact.AbstractUser;
 import org.jzb.weixin.work.contact.UserSimpleListResponse;
@@ -21,19 +22,16 @@ public class DepartmentUserIdTask extends RecursiveTask<Stream<String>> {
         this.department_id = department_id;
     }
 
+    @SneakyThrows
     @Override
     protected Stream<String> compute() {
-        try {
-            final UserSimpleListResponse res = agentClient.userSimpleList()
-                    .department_id(department_id)
-                    .fetch_child(true)
-                    .call();
-            if (!res.isSuccessed()) {
-                throw new RuntimeException(res.errmsg());
-            }
-            return res.userlist().map(AbstractUser::userid);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        final UserSimpleListResponse res = agentClient.userSimpleList()
+                .department_id(department_id)
+                .fetch_child(true)
+                .call();
+        if (!res.isSuccessed()) {
+            throw new RuntimeException(res.errmsg());
         }
+        return res.userlist().map(AbstractUser::userid);
     }
 }

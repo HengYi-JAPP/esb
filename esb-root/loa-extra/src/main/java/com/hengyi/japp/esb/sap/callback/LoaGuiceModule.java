@@ -7,12 +7,14 @@ import com.rabbitmq.client.ConnectionFactory;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import loa.biz.LOAApp;
+import loa.biz.LOATextResponseChecker;
 import lombok.SneakyThrows;
 import reactor.rabbitmq.RabbitFlux;
 import reactor.rabbitmq.Receiver;
 import reactor.rabbitmq.ReceiverOptions;
 
 import javax.inject.Named;
+import java.lang.reflect.Field;
 
 /**
  * 描述：
@@ -49,6 +51,14 @@ public class LoaGuiceModule extends AbstractModule {
         final LOAApp app = LOAApp.getInstance();
         app.init(appUrl, appName, appKey, true);
         app.login(account, pwd);
+
+        // fixme 临时解决自动登入
+        final Field field = LOATextResponseChecker.class.getDeclaredField("_Code_ServerTimeOut");
+        if (field != null) {
+            field.setAccessible(true);
+            field.setInt(null, 345);
+        }
+
         return app;
     }
 

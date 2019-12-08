@@ -1,10 +1,9 @@
 package com.hengyi.japp.esb.weixin.application;
 
-import io.reactivex.Completable;
+import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
-import io.vertx.reactivex.core.Vertx;
-import io.vertx.reactivex.core.http.HttpServerResponse;
-import io.vertx.reactivex.ext.web.Router;
+import io.vertx.ext.web.Router;
 import org.jzb.J;
 
 import java.time.LocalDate;
@@ -31,14 +30,14 @@ public interface SchedulerPunch extends Runnable {
                     .map(LocalDate::parse)
                     .orElse(LocalDate.now());
             fetchAndUpdate(ldStart, ldEnd).subscribe(
-                    () -> response.end("ok"),
+                    it -> response.end("ok"),
                     ex -> response.setStatusCode(400).end(ex.getMessage())
             );
         });
         return router;
     }
 
-    Completable fetchAndUpdate(LocalDate startDate, LocalDate endDate);
+    void fetchAndUpdate(LocalDate startDate, LocalDate endDate);
 
     void cancel();
 }

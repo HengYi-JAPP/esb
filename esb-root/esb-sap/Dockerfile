@@ -1,8 +1,14 @@
-FROM mcr.microsoft.com/java/jre:11u3-zulu-centos
+FROM mcr.microsoft.com/java/jre:11u5-zulu-centos
 
-ENV LANG     zh_CN.UTF-8
-ENV LANGUAGE zh_CN.UTF-8
-ENV LC_ALL   zh_CN.UTF-8
+#RUN rm -rf /etc/localtime && ln -s /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
+#    && yum -y install kde-l10n-Chinese && yum -y reinstall glibc-common \
+#    && localedef -c -f UTF-8 -i zh_CN zh_CN.utf8
+#
+#ENV LC_ALL zh_CN.utf8 #设置环境变量
+
+#ENV LANG     zh_CN.UTF-8
+#ENV LANGUAGE zh_CN.UTF-8
+#ENV LC_ALL   zh_CN.UTF-8
 ENV TZ Asia/Shanghai
 ENV JAVA_TOOL_OPTIONS="-XX:+UseContainerSupport"
 ENV JAVA_OPTIONS ""

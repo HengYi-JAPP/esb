@@ -4,34 +4,32 @@ import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import com.hengyi.japp.esb.core.Util;
-import com.hengyi.japp.esb.core.infrastructure.persistence.UnitOfWork;
 import com.hengyi.japp.esb.weixin.application.SchedulerPunch;
-import com.hengyi.japp.esb.weixin.domain.SchedulerPunchLog;
-import io.reactivex.Completable;
-import io.reactivex.Flowable;
-import io.reactivex.Scheduler;
-import io.reactivex.disposables.Disposable;
-import io.vertx.reactivex.ext.jdbc.JDBCClient;
+import io.vertx.core.Future;
+import io.vertx.ext.jdbc.JDBCClient;
+import io.vertx.ext.sql.SQLConnection;
 import org.jzb.J;
 import org.jzb.weixin.work.AgentClient;
 import org.jzb.weixin.work.WorkClient;
 import org.jzb.weixin.work.oa.CheckinData;
-import org.jzb.weixin.work.oa.GetCheckinDataResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.Disposable;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Scheduler;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
-
-import static com.hengyi.japp.esb.weixin.MainVerticle.GUICE;
 
 /**
  * @author jzb 2018-04-29
@@ -64,32 +62,28 @@ public class SchedulerPunchImpl implements SchedulerPunch {
          * 时间差小于0，需要加一天的延迟
          */
         final long initialDelay = until >= 0 ? until : daySeconds + until;
-        return scheduler.schedulePeriodicallyDirect(this, initialDelay, daySeconds, TimeUnit.SECONDS);
+        return scheduler.schedulePeriodically(this, initialDelay, daySeconds, TimeUnit.SECONDS);
     }
 
     @Override
     public void run() {
         final LocalDate ldEnd = LocalDate.now();
-        fetchAndUpdate(ldEnd.plusDays(-1), ldEnd).subscribe();
+        fetchAndUpdate(ldEnd.plusDays(-1), ldEnd);
     }
 
     @Override
-    public Completable fetchAndUpdate(final LocalDate ldStart, final LocalDate ldEnd) {
-        final SchedulerPunchLog schedulerPunchLog = logStart();
+    public void fetchAndUpdate(final LocalDate ldStart, final LocalDate ldEnd) {
+//        final SchedulerPunchLog schedulerPunchLog = logStart();
         final Stream<String> userIdStream = ForkJoinPool.commonPool().invoke(new AgentUserIdTask(agentClient));
-        return Flowable.fromIterable(userIdStream::iterator)
+        return Flux.fromIterable(userIdStream::iterator)
                 .buffer(100)
-                .flatMap(it -> {
-                    final GetCheckinDataResponse res = agentClient.getCheckinData()
-                            .addUser(it)
-                            .starttime(ldStart)
-                            .endtime(ldEnd)
-                            .call();
+                .flatMap(it -> Mono.fromCallable(() -> agentClient.getCheckinData().addUser(it).starttime(ldStart).endtime(ldEnd).call()))
+                .flatMap(res -> {
                     if (!res.isSuccessed()) {
                         throw new RuntimeException();
                     }
                     final Stream<CheckinData> stream = res.checkindata();
-                    return Flowable.fromIterable(stream::iterator);
+                    return Flux.fromIterable(stream::iterator);
                 })
                 .filter(CheckinData::hasCheckin)
                 .map(it -> {
@@ -101,8 +95,19 @@ public class SchedulerPunchImpl implements SchedulerPunch {
                     final ImmutableMap<String, String> parmas = builder.build();
                     return J.strTpl(INSERT_SQL_TPL, parmas);
                 })
-                .toList()
-                .flatMap(insertSqls -> punchDS.rxGetConnection().flatMap(conn -> {
+                .collectList()
+                .subscribe(insertSqls -> Future.<SQLConnection>future(p -> punchDS.getConnection(p)).compose(conn -> {
+                    final ImmutableMap<String, String> map = ImmutableMap.of(
+                            "startDate", ldStart.format(dateFormat),
+                            "endDate", ldEnd.format(dateFormat)
+                    );
+                    final String deleteSql = J.strTpl(DELETE_SQL_TPL, map);
+                    return Future.<Void>future(p -> conn.execute(deleteSql, p))
+                            .compose(it -> Future.<List<Integer>>future(p -> conn.batch(insertSqls, p)));
+                }).setHandler(ar -> {
+                }), err -> {
+                })
+                .flatMap(insertSqls -> punchDS.getConnection(conn ->).flatMap(conn -> {
                     final ImmutableMap<String, String> map = ImmutableMap.of(
                             "startDate", ldStart.format(dateFormat),
                             "endDate", ldEnd.format(dateFormat)
@@ -117,33 +122,33 @@ public class SchedulerPunchImpl implements SchedulerPunch {
                 .doOnError(ex -> this.logError(schedulerPunchLog, ex));
     }
 
-    private SchedulerPunchLog logStart() {
-        final UnitOfWork uow = GUICE.getInstance(UnitOfWork.class);
-        final SchedulerPunchLog schedulerPunchLog = new SchedulerPunchLog();
-        uow.registerNew(schedulerPunchLog);
-        schedulerPunchLog.setStartDateTime(System.currentTimeMillis());
-        schedulerPunchLog.setSuccessed(false);
-        uow.commit();
-        log.info("===打卡数据schedule 开始===");
-        return schedulerPunchLog;
-    }
-
-    private void logError(SchedulerPunchLog schedulerPunchLog, Throwable ex) {
-        final UnitOfWork uow = GUICE.getInstance(UnitOfWork.class);
-        uow.registerDirty(schedulerPunchLog);
-        schedulerPunchLog.setEndDateTime(System.currentTimeMillis());
-        schedulerPunchLog.setCallException(ex);
-        uow.commit();
-        log.error("===打卡数据schedule 失败===", ex);
-    }
-
-    private void logEnd(SchedulerPunchLog schedulerPunchLog) {
-        final UnitOfWork uow = GUICE.getInstance(UnitOfWork.class);
-        uow.registerDirty(schedulerPunchLog);
-        schedulerPunchLog.setEndDateTime(System.currentTimeMillis());
-        uow.commit();
-        log.info("===打卡数据schedule 成功===");
-    }
+//    private SchedulerPunchLog logStart() {
+//        final UnitOfWork uow = GUICE.getInstance(UnitOfWork.class);
+//        final SchedulerPunchLog schedulerPunchLog = new SchedulerPunchLog();
+//        uow.registerNew(schedulerPunchLog);
+//        schedulerPunchLog.setStartDateTime(System.currentTimeMillis());
+//        schedulerPunchLog.setSuccessed(false);
+//        uow.commit();
+//        log.info("===打卡数据schedule 开始===");
+//        return schedulerPunchLog;
+//    }
+//
+//    private void logError(SchedulerPunchLog schedulerPunchLog, Throwable ex) {
+//        final UnitOfWork uow = GUICE.getInstance(UnitOfWork.class);
+//        uow.registerDirty(schedulerPunchLog);
+//        schedulerPunchLog.setEndDateTime(System.currentTimeMillis());
+//        schedulerPunchLog.setCallException(ex);
+//        uow.commit();
+//        log.error("===打卡数据schedule 失败===", ex);
+//    }
+//
+//    private void logEnd(SchedulerPunchLog schedulerPunchLog) {
+//        final UnitOfWork uow = GUICE.getInstance(UnitOfWork.class);
+//        uow.registerDirty(schedulerPunchLog);
+//        schedulerPunchLog.setEndDateTime(System.currentTimeMillis());
+//        uow.commit();
+//        log.info("===打卡数据schedule 成功===");
+//    }
 
     @Override
     public void cancel() {

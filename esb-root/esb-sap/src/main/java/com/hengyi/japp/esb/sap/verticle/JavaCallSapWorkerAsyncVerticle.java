@@ -99,7 +99,7 @@ public class JavaCallSapWorkerAsyncVerticle extends AbstractVerticle {
             final BasicProperties basicProperties = new BasicProperties.Builder().headers(headers).build();
             final OutboundMessage outboundMessage = new OutboundMessage(EXCHANGE_CALLBACK, rfcName, basicProperties, sapRet.getBytes(UTF_8));
             final Mono<OutboundMessage> outboundMessageMono = Mono.just(outboundMessage);
-            sender.sendWithPublishConfirms(outboundMessageMono, sendOptions).next().subscribe(it -> {
+            sender.sendWithPublishConfirms(outboundMessageMono, sendOptions).subscribe(it -> {
                 if (it.isAck()) {
                     apmSuccess(span, sapRet);
                     log.info(sb.append(sapRet).toString());
@@ -112,8 +112,9 @@ public class JavaCallSapWorkerAsyncVerticle extends AbstractVerticle {
                 log.error(sb.append(sapRet).toString(), err);
             });
         }).doOnError(err -> {
+            delivery.nack(false);
             apmError(span, err);
-            log.error(rfcName, err);
+            log.error(body, err);
         }).subscribe();
     }
 

@@ -3,13 +3,14 @@ package com.hengyi.japp.esb.weixin.verticle;
 import com.hengyi.japp.esb.core.Util;
 import com.hengyi.japp.esb.weixin.application.SchedulerPunch;
 import com.hengyi.japp.esb.weixin.application.WeixinService;
+import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
-import io.vertx.reactivex.ext.auth.jwt.JWTAuth;
-import io.vertx.reactivex.ext.web.Router;
-import io.vertx.reactivex.ext.web.handler.BodyHandler;
-import io.vertx.reactivex.ext.web.handler.JWTAuthHandler;
-import io.vertx.reactivex.ext.web.handler.ResponseContentTypeHandler;
+import io.vertx.ext.auth.jwt.JWTAuth;
+import io.vertx.ext.web.Router;
+import io.vertx.ext.web.handler.BodyHandler;
+import io.vertx.ext.web.handler.JWTAuthHandler;
+import io.vertx.ext.web.handler.ResponseContentTypeHandler;
 
 import java.util.Optional;
 
@@ -20,7 +21,7 @@ import static com.hengyi.japp.esb.weixin.MainVerticle.GUICE;
  *
  * @author jzb 2018-04-11
  */
-public class WeixinVerticle extends BaseRestAPIVerticle {
+public class WeixinVerticle extends AbstractVerticle {
     private JWTAuth jwtAuth;
 
     @Override
@@ -43,9 +44,7 @@ public class WeixinVerticle extends BaseRestAPIVerticle {
                 .orElse(new JsonObject());
         final Integer port = httpConfig.getInteger("port", 9995);
         vertx.createHttpServer()
-                .requestHandler(router::accept)
-                .rxListen(port)
-                .toCompletable()
-                .subscribe(startFuture::complete, startFuture::fail);
+                .requestHandler(router)
+                .listen(port, ar -> startFuture.handle(ar.mapEmpty()));
     }
 }

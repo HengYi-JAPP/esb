@@ -73,7 +73,7 @@ public class ZRFC_SD_YX_003_Verticle extends AbstractVerticle {
             final String TRANSID = delivery.getProperties().getHeaders().get("TRANSID").toString();
             span.setTag("TRANSID", TRANSID);
             for (JsonNode row : ET_ORDER_RE) {
-                LOAFormDataObject vObj = app.newFormDataObject("ZRFC_SD_YX_003回调表");
+                final LOAFormDataObject vObj = app.newFormDataObject("ZRFC_SD_YX_003回调表");
                 vObj.addRawValue("TRANSID", TRANSID);
                 vObj.addRawValue("VBELN", row.get("VBELN").asText());
                 vObj.addRawValue("OPT", row.get("OPT").asText());
@@ -94,9 +94,11 @@ public class ZRFC_SD_YX_003_Verticle extends AbstractVerticle {
                 delivery.ack();
                 apmSuccess(span, "");
             } else {
+                delivery.nack(false);
                 apmError(span, new RuntimeException("LOAApp"));
             }
         }).doOnError(err -> {
+            delivery.nack(false);
             apmError(span, err);
             log.error(RFC_NAME, err);
         }).subscribe();

@@ -30,18 +30,8 @@ public class SapUtil {
         }
         final JsonNode node = MAPPER.readTree(body);
         setParam(f.getImportParameterList(), node.get("imports"));
-        setParam(f.getChangingParameterList(), node.get("exports"));
         setParam(f.getChangingParameterList(), node.get("changings"));
         setParam(f.getTableParameterList(), node.get("tables"));
-    }
-
-    public static final String params2String(JCoFunction f) throws Exception {
-        final Map<String, Object> map = Maps.newHashMap();
-        map.put("imports", toMap(f.getImportParameterList()));
-        map.put("exports", toMap(f.getExportParameterList()));
-        map.put("changings", toMap(f.getChangingParameterList()));
-        map.put("tables", toMap(f.getTableParameterList()));
-        return MAPPER.writeValueAsString(map);
     }
 
     private static final void setParam(final JCoRecord record, final JsonNode node) {
@@ -89,6 +79,15 @@ public class SapUtil {
                 return fieldNode.asText();
             }
         }
+    }
+
+    public static final String params2String(JCoFunction f) throws Exception {
+        final Map<String, Object> map = Maps.newHashMap();
+        map.put("imports", toMap(f.getImportParameterList()));
+        map.put("exports", toMap(f.getExportParameterList()));
+        map.put("changings", toMap(f.getChangingParameterList()));
+        map.put("tables", toMap(f.getTableParameterList()));
+        return MAPPER.writeValueAsString(map);
     }
 
     public static final Map<String, Object> toMap(final JCoRecord record) {
