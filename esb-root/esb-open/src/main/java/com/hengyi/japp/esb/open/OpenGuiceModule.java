@@ -1,11 +1,12 @@
 package com.hengyi.japp.esb.open;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
+import com.google.inject.*;
 import com.google.inject.name.Named;
+import com.hengyi.japp.esb.core.GuiceModule;
+import com.hengyi.japp.esb.open.config.YunbiaoMailConfig;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.ext.web.sstore.LocalSessionStore;
 import lombok.SneakyThrows;
 import org.pac4j.cas.client.CasClient;
@@ -25,6 +26,9 @@ import java.nio.file.Path;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.util.Map;
+
+import static com.github.ixtf.japp.core.Constant.MAPPER;
 
 /**
  * 描述：
@@ -32,6 +36,22 @@ import java.security.PublicKey;
  * @author jzb 2018-03-21
  */
 public class OpenGuiceModule extends AbstractModule {
+    private static Injector INJECTOR;
+
+    synchronized public static void init(Vertx vertx) {
+        if (INJECTOR != null) {
+            return;
+        }
+        INJECTOR = Guice.createInjector(new GuiceModule(vertx, "esb-open"), new OpenGuiceModule());
+    }
+
+    public static <T> T getInstance(Class<T> clazz) {
+        return INJECTOR.getInstance(clazz);
+    }
+
+    public static <T> T getInstance(Key<T> key) {
+        return INJECTOR.getInstance(key);
+    }
 
     @Provides
     @Singleton
@@ -99,6 +119,31 @@ public class OpenGuiceModule extends AbstractModule {
     @Singleton
     private PublicKey PublicKey(KeyStore keystore) {
         return keystore.getCertificate("esb-open").getPublicKey();
+    }
+
+    @Provides
+    @Singleton
+    private YunbiaoMailConfig YunbiaoMailConfig(@Named("vertxConfig") JsonObject vertxConfig) {
+        final JsonObject config = vertxConfig.getJsonObject("yunbiao-mail", new JsonObject());
+        final String host = config.getString("host", "smtp.exmail.qq.com");
+        final String from = config.getString("from");
+        final String password = config.getString("password");
+        final String subject = config.getString("subject", "恒逸云表密码修改");
+        final String urlTpl = config.getString("urlTpl", "http://www.baidu.com?mailKey=${mailKey}");
+        final String contentTpl = config.getString("contentTpl", "<h1>修改密码</h1><hr>${url}");
+        final String checkSql = config.getString("checkSql", "select f12,f44 from T10001_C2778 where f12=? and f44=?");
+        final String updateSql = config.getString("updateSql", "update LATO_USER set M_PASSWORD=?,M_SALT='' where M_ACCOUNT=?");
+        return new YunbiaoMailConfig(host, from, password, subject, urlTpl, contentTpl, checkSql, updateSql);
+    }
+
+    @SneakyThrows
+    @Provides
+    @Named("yunbiao_DS")
+    private JDBCClient yunbiao_DS(Vertx vertx, @Named("rootPath") Path rootPath) {
+        final Path path = rootPath.resolve("yunbiao_DS.config.json");
+        final Map map = MAPPER.readValue(path.toFile(), Map.class);
+        final JsonObject config = new JsonObject(map);
+        return JDBCClient.createShared(vertx, config, "yunbiao_DS");
     }
 
 }

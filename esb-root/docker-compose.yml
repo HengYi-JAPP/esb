@@ -13,7 +13,7 @@ services:
   #      - "9998:9998"
   #
   esb-sap:
-    image: mcr.microsoft.com/java/jre:11u3-zulu-alpine
+    image: mcr.microsoft.com/java/jre:11u5-zulu-alpine
     container_name: esb-sap
     network_mode: host
     restart: always

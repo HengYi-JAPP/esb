@@ -1,8 +1,5 @@
 package com.hengyi.japp.esb.open;
 
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.hengyi.japp.esb.core.GuiceModule;
 import com.hengyi.japp.esb.open.verticle.OpenAgentVerticle;
 import io.vertx.core.*;
 import lombok.extern.slf4j.Slf4j;
@@ -14,8 +11,6 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 public class OpenVerticle extends AbstractVerticle {
-    public static String OPEN_MODULE = "esb-open";
-    public static Injector OPEN_INJECTOR;
 
     public static void main(String[] args) {
         final VertxOptions vertxOptions = new VertxOptions()
@@ -24,7 +19,7 @@ public class OpenVerticle extends AbstractVerticle {
                 .setMaxEventLoopExecuteTime(1)
                 .setMaxEventLoopExecuteTimeUnit(TimeUnit.MINUTES);
         final Vertx vertx = Vertx.vertx(vertxOptions);
-        OPEN_INJECTOR = Guice.createInjector(new GuiceModule(vertx, OPEN_MODULE), new OpenGuiceModule());
+        OpenGuiceModule.init(vertx);
 
         final DeploymentOptions deploymentOptions = new DeploymentOptions();
         vertx.deployVerticle(OpenVerticle.class, deploymentOptions, ar -> {

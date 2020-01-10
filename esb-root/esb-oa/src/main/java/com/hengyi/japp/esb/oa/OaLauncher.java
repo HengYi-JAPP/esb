@@ -1,6 +1,7 @@
 package com.hengyi.japp.esb.oa;
 
 import io.vertx.core.Launcher;
+import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 
 import java.util.concurrent.TimeUnit;
@@ -22,4 +23,8 @@ public class OaLauncher extends Launcher {
                 .setMaxEventLoopExecuteTimeUnit(TimeUnit.MINUTES);
     }
 
+    @Override
+    public void afterStartingVertx(Vertx vertx) {
+        OaGuiceModule.init(vertx);
+    }
 }

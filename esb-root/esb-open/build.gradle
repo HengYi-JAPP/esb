@@ -1,8 +1,13 @@
 dependencies {
     compile project(':esb-core'),
+            "io.vertx:vertx-jdbc-client",
+            "com.zaxxer:HikariCP:${hikariVersion}",
+            files('/home/jzb/Templates/lib/ojdbc7.jar'),
             "io.vertx:vertx-web-client",
             "org.pac4j:vertx-pac4j:4.1.1",
             "org.pac4j:pac4j-cas:3.8.1"
+    // https://mvnrepository.com/artifact/javax.mail/mail
+    compile group: 'javax.mail', name: 'mail', version: '1.4.7'
 }
 
 mainClassName = "com.hengyi.japp.esb.open.OpenVerticle"

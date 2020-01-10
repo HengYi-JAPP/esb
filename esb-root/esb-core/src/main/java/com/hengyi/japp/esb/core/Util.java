@@ -7,6 +7,7 @@ import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.tag.Tags;
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.Message;
@@ -19,6 +20,7 @@ import io.vertx.ext.web.RoutingContext;
 import lombok.Cleanup;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Mono;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -51,6 +53,21 @@ public class Util {
                 .setPublicKey(Constant.JWT.PUBLIC_KEY);
         final JWTAuthOptions jwtAuthOptions = new JWTAuthOptions().addPubSecKey(rs512);
         return JWTAuth.create(vertx, jwtAuthOptions);
+    }
+
+    public static <T> Mono<T> mono(Future<T> future) {
+        return Mono.create(monoSink -> future.setHandler(it -> {
+            if (it.succeeded()) {
+                final T result = it.result();
+                if (result == null) {
+                    monoSink.success();
+                } else {
+                    monoSink.success(result);
+                }
+            } else {
+                monoSink.error(it.cause());
+            }
+        }));
     }
 
     public static Span initApm(RoutingContext rc, Tracer tracer, Object component, String operationName, String address, DeliveryOptions deliveryOptions, String message) {

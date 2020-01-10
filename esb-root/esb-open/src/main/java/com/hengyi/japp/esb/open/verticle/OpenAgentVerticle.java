@@ -26,17 +26,17 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 
-import static com.hengyi.japp.esb.open.OpenVerticle.OPEN_INJECTOR;
+import static com.hengyi.japp.esb.open.OpenGuiceModule.getInstance;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * @author jzb 2019-09-19
  */
 public class OpenAgentVerticle extends AbstractVerticle {
-    private final LocalSessionStore localSessionStore = OPEN_INJECTOR.getInstance(LocalSessionStore.class);
-    private final Pac4jAuthProvider pac4jAuthProvider = OPEN_INJECTOR.getInstance(Pac4jAuthProvider.class);
-    private final SessionStore pac4jSessionStore = OPEN_INJECTOR.getInstance(SessionStore.class);
-    private final Config pac4jConfig = OPEN_INJECTOR.getInstance(Config.class);
+    private final LocalSessionStore localSessionStore = getInstance(LocalSessionStore.class);
+    private final Pac4jAuthProvider pac4jAuthProvider = getInstance(Pac4jAuthProvider.class);
+    private final SessionStore pac4jSessionStore = getInstance(SessionStore.class);
+    private final Config pac4jConfig = getInstance(Config.class);
 
     @Override
     public void start(Future<Void> startFuture) throws Exception {
@@ -57,7 +57,7 @@ public class OpenAgentVerticle extends AbstractVerticle {
         downloads_scm_annex(router);
 
         router.route("/autoLogin/talent").handler(rc -> {
-            final TalentService talentService = OPEN_INJECTOR.getInstance(TalentService.class);
+            final TalentService talentService = getInstance(TalentService.class);
             talentService.autoLoginUrl(rc.user()).setHandler(ar -> {
                 if (ar.succeeded()) {
                     rc.response().putHeader(HttpHeaders.LOCATION, ar.result()).setStatusCode(303).end();

@@ -19,6 +19,7 @@ import java.nio.file.Paths;
 import java.util.Map;
 
 import static com.github.ixtf.japp.core.Constant.MAPPER;
+import static com.github.ixtf.japp.core.Constant.YAML_MAPPER;
 
 /**
  * @author jzb 2018-03-21
@@ -50,8 +51,14 @@ public class GuiceModule extends AbstractModule {
     @Singleton
     @Named("vertxConfig")
     private JsonObject vertxConfig(@Named("rootPath") Path rootPath) {
-        final File file = rootPath.resolve("config.json").toFile();
-        final Map map = MAPPER.readValue(file, Map.class);
+        final Map map;
+        final File ymlFile = rootPath.resolve("config.yml").toFile();
+        final File jsonFile = rootPath.resolve("config.json").toFile();
+        if (ymlFile.exists()) {
+            map = YAML_MAPPER.readValue(ymlFile, Map.class);
+        } else {
+            map = MAPPER.readValue(jsonFile, Map.class);
+        }
         return new JsonObject(map);
     }
 
